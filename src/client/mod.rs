@@ -1,14 +1,16 @@
-mod responses;
+mod errors;
+mod models;
 
-use std::path::Path;
 use log::error;
-use reqwest::Body;
 use reqwest::multipart::{Form, Part};
+use reqwest::Body;
 use serde::{Deserialize, Serialize};
-use serde_json::Error;
+use std::path::Path;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-pub use responses::*;
+use crate::config::CloudConfig;
+pub use errors::*;
+pub use models::*;
 
 const BASE_URL: &str = "https://leptos.cloud/api/v1/";
 
@@ -26,23 +28,48 @@ impl Client {
         }
     }
 
+    pub async fn check_name(self, name: &str) -> Result<bool, ReqwestJsonError> {
+        let res: CheckNameResponse = self
+            .post("check-name")
+            .json(&CheckNameRequest {
+                name: name.to_string(),
+            })?
+            .send()
+            .await?;
+
+        Ok(res.available)
+    }
+
     pub async fn login(self) -> Result<LoginResponse, reqwest::Error> {
         self.post("login").body("{}").send().await
     }
 
-    pub async fn upload_file(self, path: impl AsRef<Path>) -> std::io::Result<ClientBuilder> {
-        let file = tokio::fs::File::open(path).await?;
+    pub async fn upload_file(self, path: impl AsRef<Path>) -> Result<(), UploadFileError> {
+        let file = tokio::fs::File::open(path.as_ref()).await?;
         let read_stream = FramedRead::new(file, BytesCodec::new());
 
-        let stream_part = Part::stream(Body::wrap_stream(read_stream)).file_name(path);
+        let stream_part = Part::stream(Body::wrap_stream(read_stream))
+            .file_name(path.as_ref().to_string_lossy().to_string());
         let form = Form::new().part("file", stream_part);
 
-        Ok(self.post("upload-file").multipart(form))
+        Ok(self.post("upload-file").multipart(form).send().await?)
     }
 
     // TODO : send config?
-    pub fn upload_done(self) -> ClientBuilder {
-        self.post("upload-done").body("{}")
+    pub async fn upload_done(self, config: &CloudConfig) -> Result<(), ReqwestJsonError> {
+        Ok(self.post("upload-done").json(config)?.send().await?)
+    }
+
+    pub async fn log(self, name: &str) -> Result<String, ReqwestJsonError> {
+        let res: LogResponse = self
+            .post("log")
+            .json(&LogRequest {
+                name: name.to_string(),
+            })?
+            .send()
+            .await?;
+
+        Ok(res.log)
     }
 
     pub fn post(self, route: &str) -> ClientBuilder {
@@ -58,7 +85,6 @@ impl Client {
 
 pub struct ClientBuilder(reqwest::RequestBuilder);
 
-
 impl ClientBuilder {
     pub fn body<T: Into<reqwest::Body>>(self, body: T) -> ClientBuilder {
         Self(self.0.body(body))
@@ -71,12 +97,14 @@ impl ClientBuilder {
     pub fn json<Body: Serialize>(self, json: Body) -> Result<ClientBuilder, serde_json::Error> {
         let json = serde_json::to_string(&json)?;
 
-        Ok(Self(self.0.header("Content-Type", "application/json").body(json)))
+        Ok(Self(
+            self.0.header("Content-Type", "application/json").body(json),
+        ))
     }
 
     pub async fn send<Resp>(self) -> Result<Resp, reqwest::Error>
     where
-            for<'de> Resp: Deserialize<'de>,
+        for<'de> Resp: Deserialize<'de>,
     {
         let res = self.0.send().await?;
 

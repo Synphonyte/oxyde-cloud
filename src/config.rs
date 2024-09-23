@@ -1,13 +1,22 @@
-use std::path::PathBuf;
 use leptos_config::errors::LeptosConfigError;
+use std::path::PathBuf;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use toml::Table;
 
-#[derive(serde::Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CloudConfig {
-    pub app_name: String,
+    pub app: AppConfig,
+
+    pub env: Table,
 
     #[serde(skip, default)]
     pub leptos_config: leptos_config::ConfFile,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AppConfig {
+    pub name: String,
 }
 
 #[derive(Debug, Error)]
@@ -21,12 +30,16 @@ pub enum Error {
 }
 
 impl CloudConfig {
-    pub fn load(path: &PathBuf) -> Result<CloudConfig, Error> {
+    pub async fn load(path: &PathBuf) -> Result<Self, Error> {
         let contents = std::fs::read_to_string(path)?;
-        let mut config = toml::from_str(&contents)?;
+        let mut config: Self = toml::from_str(&contents)?;
 
-        config.leptos_config = leptos_config::get_configuration(Some("Cargo.toml"))?;
+        config.leptos_config = leptos_config::get_configuration(Some("Cargo.toml")).await?;
 
         Ok(config)
+    }
+
+    pub fn deployed_url(&self) -> String {
+        format!("https://{}.leptos.app", self.app.name)
     }
 }

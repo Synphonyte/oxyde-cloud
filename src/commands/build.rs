@@ -1,10 +1,12 @@
-use thiserror::Error;
-use crate::config::CloudConfig;
+use cargo_leptos::config::Commands::Build;
+use cargo_leptos::config::{Cli, Opts};
+use cargo_leptos::run;
 
-#[derive(Debug, Error)]
-pub enum Error {}
-
-pub fn build(config: &CloudConfig) -> Result<(), Error> {
-    // TODO
-    Ok(())
+pub async fn build(cargo_leptos_opts: Opts) -> anyhow::Result<()> {
+    run(Cli {
+        manifest_path: None,
+        log: vec![],
+        command: Build(cargo_leptos_opts),
+    })
+    .await
 }

@@ -8,6 +8,8 @@ name = "lecl"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1.0.89"
+cargo-leptos = "0.2.20"
 clap = { version = "4.5.18", features = ["derive", "env"] }
 cliclack = "0.3.5"
 keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
@@ -20,3 +22,4 @@ thiserror = "1.0.63"
 tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
 tokio-util = "0.7.12"
 toml = "0.8.19"
+walkdir = "2.5.0"

@@ -1,14 +1,13 @@
-mod commands;
-mod client;
-mod config;
 mod api_key;
+mod client;
+mod commands;
+mod config;
 
-use std::path::PathBuf;
-use reqwest::multipart;
-use clap::{Parser, Subcommand};
-use thiserror::Error;
-use client::upload::upload_dir;
 use crate::config::CloudConfig;
+use cargo_leptos::config::Opts;
+use clap::{Parser, Subcommand};
+use std::path::PathBuf;
+use thiserror::Error;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -29,13 +28,15 @@ enum Commands {
         /// The name of the project to deploy. Has to be unique within the cloud.
         #[arg(short, long)]
         name: Option<String>,
-    },
-    /// Build the project locally
-    Build {
+
         /// Sets a custom config file. Defaults to `leptos-cloud.toml`
         #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
         config: PathBuf,
-
+    },
+    /// Build the project locally
+    Build {
+        #[clap(flatten)]
+        cargo_leptos_opts: Opts,
     },
     /// Build the project locally and deploy it to the cloud
     Deploy {
@@ -43,6 +44,18 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
         config: PathBuf,
 
+        #[clap(flatten)]
+        cargo_leptos_opts: Opts,
+    },
+    Log {
+        /// The name of the project to get the logs for. Defaults to the name from the config in
+        /// the current directory
+        #[arg(short, long)]
+        name: Option<String>,
+
+        /// Sets a custom config file. Defaults to `leptos-cloud.toml`
+        #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
+        config: PathBuf,
     },
 }
 
@@ -55,11 +68,15 @@ enum Error {
     #[error("Init error: {0}")]
     Init(#[from] commands::init::Error),
     #[error("Build error: {0}")]
-    Build(#[from] commands::build::Error),
+    Build(#[from] anyhow::Error),
     #[error("Deploy error: {0}")]
     Deploy(#[from] commands::deploy::Error),
     #[error("Config loading error: {0}")]
     Config(#[from] config::Error),
+    #[error("Log error: {0}")]
+    Name(String),
+    #[error("Log error: {0}")]
+    Log(#[from] commands::log::Error),
 }
 
 #[tokio::main]
@@ -73,22 +90,33 @@ async fn main() -> Result<(), Error> {
         Commands::Logout => {
             commands::logout::logout()?;
         }
-        Commands::Init { name } => {
-            commands::init::init(name)?;
+        Commands::Init { name, config } => {
+            commands::init::init(name, config)?;
         }
-        Commands::Build { config } => {
-            let config = CloudConfig::load(&config)?;
-            commands::build::build(&config)?;
+        Commands::Build { cargo_leptos_opts } => {
+            commands::build::build(cargo_leptos_opts).await?;
         }
-        Commands::Deploy { config } => {
-            let config = CloudConfig::load(&config)?;
-            commands::deploy::deploy(&config).await?;
+        Commands::Deploy {
+            config,
+            cargo_leptos_opts,
+        } => {
+            let config = CloudConfig::load(&config).await?;
+            commands::deploy::deploy(&config, cargo_leptos_opts).await?;
+        }
+        Commands::Log { name, config } => {
+            let config = CloudConfig::load(&config).await.ok();
+
+            let name = if let Some(name) = name {
+                name
+            } else if let Some(config) = config {
+                config.app.name
+            } else {
+                return Err(Error::Name("If you don't execute this command in a folder with a config you have to provide an app name!".to_string()));
+            };
+
+            commands::log::log(&name).await?;
         }
     }
-
-    let mut form = multipart::Form::new();
-
-    upload_dir("test", &mut form).await?;
 
     Ok(())
 }
