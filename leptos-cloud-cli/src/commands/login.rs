@@ -1,9 +1,9 @@
 use crate::api_key::api_key_entry;
-use crate::client::Client;
 use crate::commands::logout;
 use crate::commands::logout::logout;
 use cliclack::log::remark;
 use cliclack::{input, intro, outro, outro_cancel, spinner};
+use leptos_cloud_client::Client;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -26,11 +26,13 @@ pub async fn login() -> Result<(), Error> {
         return Ok(());
     }
 
-    remark("Get your API-Key from https://leptos.cloud/api-keys")?;
+    remark("Get your API-Key from https://leptos.cloud/profile/api-key")?;
 
     let api_key: String = input("Paste your API key")
         .placeholder("ABCD-efgh-IJKL-mnop")
         .interact()?;
+
+    let api_key = api_key.trim().to_string();
 
     keyring_entry.set_password(&api_key)?;
 

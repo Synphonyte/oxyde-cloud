@@ -1,0 +1,10 @@
+[package]
+name = "leptos-cloud-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+leptos_config = "0.6.15"
+serde.workspace = true
+thiserror = "1.0.63"
+toml = "0.8.19"

@@ -1,5 +1,5 @@
 use crate::api_key::api_key;
-use crate::client::{Client, ReqwestJsonError};
+use leptos_cloud_client::{Client, ReqwestJsonError};
 use thiserror::Error;
 
 #[derive(Debug, Error)]

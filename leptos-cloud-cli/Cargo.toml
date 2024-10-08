@@ -1,0 +1,27 @@
+[package]
+name = "leptos-cloud-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "lecl"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.89"
+cargo-leptos = "0.2.20"
+clap = { version = "4.5.18", features = ["derive", "env"] }
+cliclack = "0.3.5"
+keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+leptos-cloud-client.workspace = true
+leptos-cloud-common.workspace = true
+log = "0.4.22"
+reqwest = { version = "0.12.7", features = ["stream", "multipart", "json"] }
+serde.workspace = true
+serde_json = "1.0.128"
+simple_logger = "5"
+thiserror = "1.0.63"
+tokio = { version = "1.40.0", features = ["macros", "rt-multi-thread"] }
+tokio-util = "0.7.12"
+toml = "0.8.19"
+walkdir = "2.5.0"

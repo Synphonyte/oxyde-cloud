@@ -1,5 +1,4 @@
 mod errors;
-mod models;
 
 use log::error;
 use reqwest::multipart::{Form, Part};
@@ -8,11 +7,14 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
-use crate::config::CloudConfig;
 pub use errors::*;
-pub use models::*;
+use leptos_cloud_common::config::CloudConfig;
+use leptos_cloud_common::net::{
+    CheckNameRequest, CheckNameResponse, LogRequest, LogResponse, LoginResponse,
+};
 
-const BASE_URL: &str = "https://leptos.cloud/api/v1/";
+const BASE_URL: &str = "http://localhost:3000/api/v1/";
+// const BASE_URL: &str = "https://leptos.cloud/api/v1/";
 
 #[derive(Clone)]
 pub struct Client {
@@ -40,8 +42,8 @@ impl Client {
         Ok(res.available)
     }
 
-    pub async fn login(self) -> Result<LoginResponse, reqwest::Error> {
-        self.post("login").body("{}").send().await
+    pub async fn login(self) -> Result<LoginResponse, ReqwestJsonError> {
+        Ok(self.post("login").json(())?.send().await?)
     }
 
     pub async fn upload_file(self, path: impl AsRef<Path>) -> Result<(), UploadFileError> {
@@ -75,17 +77,20 @@ impl Client {
     pub fn post(self, route: &str) -> ClientBuilder {
         let url = format!("{BASE_URL}{route}");
 
-        ClientBuilder(
-            self.client
-                .post(url)
-                .header("AuthenticationToken", self.api_key),
-        )
+        ClientBuilder(self.client.post(url)).auth_header(&self.api_key)
     }
 }
 
 pub struct ClientBuilder(reqwest::RequestBuilder);
 
 impl ClientBuilder {
+    pub fn auth_header(self, api_key: &str) -> ClientBuilder {
+        Self(
+            self.0
+                .header("Authorization", format!("Bearer {}", api_key)),
+        )
+    }
+
     pub fn body<T: Into<reqwest::Body>>(self, body: T) -> ClientBuilder {
         Self(self.0.body(body))
     }

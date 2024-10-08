@@ -1,6 +1,6 @@
-use crate::config::{AppConfig, CloudConfig};
 use cliclack::log::remark;
 use cliclack::{input, intro, outro};
+use leptos_cloud_common::config::{AppConfig, CloudConfig};
 use std::path::PathBuf;
 use thiserror::Error;
 

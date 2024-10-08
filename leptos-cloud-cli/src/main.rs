@@ -1,11 +1,9 @@
 mod api_key;
-mod client;
 mod commands;
-mod config;
 
-use crate::config::CloudConfig;
 use cargo_leptos::config::Opts;
 use clap::{Parser, Subcommand};
+use leptos_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -72,7 +70,7 @@ enum Error {
     #[error("Deploy error: {0}")]
     Deploy(#[from] commands::deploy::Error),
     #[error("Config loading error: {0}")]
-    Config(#[from] config::Error),
+    Config(#[from] leptos_cloud_common::config::Error),
     #[error("Log error: {0}")]
     Name(String),
     #[error("Log error: {0}")]
@@ -81,6 +79,8 @@ enum Error {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    simple_logger::init_with_level(log::Level::Info).unwrap();
+
     let args = Args::parse();
 
     match args.command {

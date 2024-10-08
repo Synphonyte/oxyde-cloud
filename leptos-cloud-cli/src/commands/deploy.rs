@@ -1,9 +1,9 @@
 use crate::api_key::api_key;
-use crate::client::{ReqwestJsonError, Client, UploadFileError};
 use crate::commands::build;
-use crate::config::CloudConfig;
 use cargo_leptos::config::Opts;
 use cliclack::{intro, outro, progress_bar, ProgressBar};
+use leptos_cloud_client::{Client, ReqwestJsonError, UploadFileError};
+use leptos_cloud_common::config::CloudConfig;
 use log::debug;
 use std::ffi::OsStr;
 use std::fs::read_dir;
