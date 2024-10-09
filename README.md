@@ -1,1 +1,1 @@
-# leptos-cloud-cli
+# leptos-cloud
