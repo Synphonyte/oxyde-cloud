@@ -4,8 +4,10 @@ resolver = "2"
 members = [
     "leptos-cloud-common",
     "leptos-cloud-cli",
-    "leptos-cloud-client", "examples/simple",
+    "leptos-cloud-client",
 ]
+
+exclude = ["examples"]
 
 default-members = ["leptos-cloud-cli"]
 

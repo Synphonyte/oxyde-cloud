@@ -79,7 +79,7 @@ enum Error {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    simple_logger::init_with_level(log::Level::Info).unwrap();
+    // simple_logger::init_with_level(log::Level::Info).unwrap();
 
     let args = Args::parse();
 
