@@ -10,9 +10,7 @@ crate-type = ["cdylib", "rlib"]
 axum = { version = "0.7", optional = true, features = ["macros", "multipart", "query"] }
 cfg-if = "1"
 http = { version = "1" }
-leptos = { version = "0.6", features = [
-    "serde",
-] }
+leptos = { version = "0.6", features = ["serde"] }
 leptos_axum = { version = "0.6", optional = true }
 leptos_macro = "0.6"
 leptos_meta = { version = "0.6" }

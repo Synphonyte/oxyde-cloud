@@ -79,9 +79,15 @@ enum Error {
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // simple_logger::init_with_level(log::Level::Info).unwrap();
-
     let args = Args::parse();
+
+    if !matches!(
+        args.command,
+        Commands::Build { .. } | Commands::Deploy { .. }
+    ) {
+        // TODO : unify with cargo-leptos logger
+        simple_logger::init_with_level(log::Level::Info).unwrap();
+    }
 
     match args.command {
         Commands::Login => {
@@ -91,7 +97,7 @@ async fn main() -> Result<(), Error> {
             commands::logout::logout()?;
         }
         Commands::Init { name, config } => {
-            commands::init::init(name, config)?;
+            commands::init::init(name, config).await?;
         }
         Commands::Build { cargo_leptos_opts } => {
             commands::build::build(cargo_leptos_opts).await?;

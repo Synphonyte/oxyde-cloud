@@ -61,7 +61,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
 
     let file_count = files.len() as u64;
 
-    let progress = progress_bar(file_count + 2);
+    let progress = progress_bar(file_count + 1);
     progress.start(format!(r#"Checking app name "{}"..."#, config.app.name));
 
     if let Err(err) = deploy_inner(&config, client, &mut files, &progress).await {
@@ -81,12 +81,6 @@ async fn deploy_inner(
     files: &mut Vec<PathBuf>,
     progress: &ProgressBar,
 ) -> Result<(), Error> {
-    if !client.clone().check_name(&config.app.name).await? {
-        return Err(Error::Name(config.app.name.clone()));
-    }
-
-    progress.inc(1);
-
     for file in files {
         progress.set_message(format!("Uploading {}...", file.display()));
         client.clone().upload_file(file).await?;

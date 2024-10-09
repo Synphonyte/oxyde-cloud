@@ -1,6 +1,6 @@
 use leptos_config::errors::LeptosConfigError;
-use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use thiserror::Error;
 use toml::Table;
 
@@ -17,6 +17,12 @@ pub struct CloudConfig {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AppConfig {
     pub name: String,
+}
+
+impl AppConfig {
+    pub fn is_valid_name(name: impl AsRef<str>) -> bool {
+        name.as_ref().chars().all(|c| c.is_alphanumeric() && c.is_lowercase())
+    }
 }
 
 #[derive(Debug, Error)]
