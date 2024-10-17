@@ -93,13 +93,13 @@ async fn input_name(team_id: Option<i64>) -> Result<String, Error> {
     let api_key = api_key()?;
 
     loop {
-        let name: String = input("Enter app name:")
-            .placeholder("yourappname")
+        let name: String = input("Enter app name [a-z0-9_-]:")
+            .placeholder("your-app-name-42")
             .validate_interactively(|input: &String| {
                 if AppConfig::is_valid_name(input) {
                     Ok(())
                 } else {
-                    Err("App name must be lower case alphanumeric".to_string())
+                    Err("App name must be lower case alphanumeric and can contain underscores or dashes.".to_string())
                 }
             })
             .interact()?;
