@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+headers-core = "0.3"
+http = "1"
 leptos-cloud-common.workspace = true
 log = "0.4.22"
 reqwest = "0.12.8"

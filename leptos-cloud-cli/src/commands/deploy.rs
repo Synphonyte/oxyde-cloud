@@ -30,9 +30,6 @@ pub enum Error {
 
     #[error("Deployment done error: {0}")]
     Done(#[from] reqwest::Error),
-
-    #[error("App name '{0}' not available")]
-    Name(String),
 }
 
 pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {
@@ -64,7 +61,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     let progress = progress_bar(file_count + 1);
     progress.start(format!(r#"Checking app name "{}"..."#, config.app.name));
 
-    if let Err(err) = deploy_inner(&config, client, &mut files, &progress).await {
+    if let Err(err) = deploy_inner(config, client, &mut files, &progress).await {
         progress.error(format!("Deploy failed: {:?}", err));
         return Err(err);
     }
@@ -76,14 +73,17 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
 }
 
 async fn deploy_inner(
-    config: &&CloudConfig,
+    config: &CloudConfig,
     client: Client,
     files: &mut Vec<PathBuf>,
     progress: &ProgressBar,
 ) -> Result<(), Error> {
     for file in files {
         progress.set_message(format!("Uploading {}...", file.display()));
-        client.clone().upload_file(file).await?;
+        client
+            .clone()
+            .upload_file(&config.app.name, config.app.team_id, file)
+            .await?;
         progress.inc(1);
     }
 
@@ -99,6 +99,7 @@ fn recursive_files_from_dir(dir: impl AsRef<Path>) -> Vec<PathBuf> {
     WalkDir::new(dir)
         .into_iter()
         .filter_map(|e| e.ok().map(|e| e.into_path()))
+        .filter_map(|e| if e.is_file() { Some(e) } else { None })
         .collect()
 }
 

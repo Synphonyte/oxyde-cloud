@@ -1,6 +1,6 @@
 use crate::api_key::api_key;
 use cliclack::log::remark;
-use cliclack::{input, intro, outro, spinner};
+use cliclack::{input, intro, outro, select, spinner};
 use leptos_cloud_client::{Client, ReqwestJsonError};
 use leptos_cloud_common::config::{AppConfig, CloudConfig};
 use std::path::PathBuf;
@@ -21,19 +21,31 @@ pub enum Error {
     Toml(#[from] toml::ser::Error),
 }
 
-pub async fn init(name: Option<String>, config_file: PathBuf) -> Result<(), Error> {
+pub async fn init(
+    name: Option<String>,
+    team_id: Option<i64>,
+    config_file: PathBuf,
+) -> Result<(), Error> {
     intro("Leptos Cloud app init")?;
+
+    let team_id = match team_id {
+        Some(team_id) => {
+            remark(&format!("Team ID provided: {}", team_id))?;
+            Some(team_id)
+        }
+        None => input_team_id().await?,
+    };
 
     let name = match name {
         Some(name) => {
             remark(&format!("App name provided: {}", name))?;
             name
         }
-        None => input_name().await?,
+        None => input_name(team_id).await?,
     };
 
     let config = CloudConfig {
-        app: AppConfig { name },
+        app: AppConfig { name, team_id },
         env: Default::default(),
         leptos_config: Default::default(),
     };
@@ -47,7 +59,37 @@ pub async fn init(name: Option<String>, config_file: PathBuf) -> Result<(), Erro
     Ok(())
 }
 
-async fn input_name() -> Result<String, Error> {
+async fn input_team_id() -> Result<Option<i64>, Error> {
+    let api_key = api_key()?;
+
+    let spinner = spinner();
+    spinner.start("Loading teams...");
+
+    let client = Client::new(api_key.clone());
+
+    let teams = client.teams().await?;
+
+    if teams.is_empty() {
+        spinner.stop("No teams found. Creating a personal app.");
+        return Ok(None);
+    }
+
+    spinner.clear();
+
+    let team_id = select("Select the team this app should belong to:")
+        .item(None, "Personal", "Not part of a team")
+        .items(
+            &teams
+                .into_iter()
+                .map(|t| (Some(t.id), t.name, ""))
+                .collect::<Vec<_>>(),
+        )
+        .interact()?;
+
+    Ok(team_id)
+}
+
+async fn input_name(team_id: Option<i64>) -> Result<String, Error> {
     let api_key = api_key()?;
 
     loop {
@@ -67,7 +109,7 @@ async fn input_name() -> Result<String, Error> {
 
         let client = Client::new(api_key.clone());
 
-        if client.check_name(&name).await? {
+        if client.check_name(&name, team_id).await? {
             spinner.stop("Name confirmed");
             return Ok(name);
         } else {

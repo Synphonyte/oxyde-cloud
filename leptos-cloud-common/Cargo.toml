@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+headers-core = "0.3"
 leptos_config = "0.6.15"
 serde.workspace = true
 thiserror = "1.0.63"

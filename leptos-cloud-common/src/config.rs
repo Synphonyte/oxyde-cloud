@@ -17,6 +17,8 @@ pub struct CloudConfig {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AppConfig {
     pub name: String,
+
+    pub team_id: Option<i64>,
 }
 
 impl AppConfig {
