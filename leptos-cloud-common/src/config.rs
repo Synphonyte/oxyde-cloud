@@ -22,18 +22,22 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    const ALLOWED_CHARS: [char; 38] = [
+    pub const ALLOWED_CHARS: [char; 38] = [
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
         '-', '_',
     ];
 
+    pub const MIN_LENGTH: usize = 5;
+
     pub fn is_valid_name(name: impl AsRef<str>) -> bool {
-        name.as_ref()
-            .chars()
-            .next()
-            .map(|c| c.is_ascii_lowercase())
-            .unwrap_or(false)
+        name.as_ref().len() >= Self::MIN_LENGTH
+            && name
+                .as_ref()
+                .chars()
+                .next()
+                .map(|c| c.is_ascii_lowercase())
+                .unwrap_or(false)
             && name
                 .as_ref()
                 .chars()

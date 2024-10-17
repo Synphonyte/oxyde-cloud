@@ -99,7 +99,7 @@ async fn input_name(team_id: Option<i64>) -> Result<String, Error> {
                 if AppConfig::is_valid_name(input) {
                     Ok(())
                 } else {
-                    Err("App name must be lower case alphanumeric and can contain underscores or dashes.".to_string())
+                    Err(format!("App name must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_LENGTH))
                 }
             })
             .interact()?;
