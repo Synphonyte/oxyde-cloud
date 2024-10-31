@@ -23,17 +23,17 @@ pub enum Error {
 
 pub async fn init(
     name: Option<String>,
-    team_id: Option<i64>,
+    team_slug: Option<String>,
     config_file: PathBuf,
 ) -> Result<(), Error> {
     intro("Leptos Cloud app init")?;
 
-    let team_id = match team_id {
-        Some(team_id) => {
-            remark(&format!("Team ID provided: {}", team_id))?;
-            Some(team_id)
+    let team_slug = match team_slug {
+        Some(team_slug) => {
+            remark(&format!("Team ID provided: {}", team_slug))?;
+            Some(team_slug)
         }
-        None => input_team_id().await?,
+        None => input_team_slug().await?,
     };
 
     let name = match name {
@@ -41,11 +41,11 @@ pub async fn init(
             remark(&format!("App name provided: {}", name))?;
             name
         }
-        None => input_name(team_id).await?,
+        None => input_name(team_slug.as_ref()).await?,
     };
 
     let config = CloudConfig {
-        app: AppConfig { name, team_id },
+        app: AppConfig { name, team_slug },
         env: Default::default(),
         leptos_config: Default::default(),
     };
@@ -59,7 +59,7 @@ pub async fn init(
     Ok(())
 }
 
-async fn input_team_id() -> Result<Option<i64>, Error> {
+async fn input_team_slug() -> Result<Option<String>, Error> {
     let api_key = api_key()?;
 
     let spinner = spinner();
@@ -76,20 +76,20 @@ async fn input_team_id() -> Result<Option<i64>, Error> {
 
     spinner.clear();
 
-    let team_id = select("Select the team this app should belong to:")
+    let team_slug = select("Select the team this app should belong to:")
         .item(None, "Personal", "Not part of a team")
         .items(
             &teams
                 .into_iter()
-                .map(|t| (Some(t.id), t.name, ""))
+                .map(|t| (Some(t.slug), t.name, ""))
                 .collect::<Vec<_>>(),
         )
         .interact()?;
 
-    Ok(team_id)
+    Ok(team_slug)
 }
 
-async fn input_name(team_id: Option<i64>) -> Result<String, Error> {
+async fn input_name(team_slug: Option<&String>) -> Result<String, Error> {
     let api_key = api_key()?;
 
     loop {
@@ -109,7 +109,7 @@ async fn input_name(team_id: Option<i64>) -> Result<String, Error> {
 
         let client = Client::new(api_key.clone());
 
-        if client.check_name(&name, team_id).await? {
+        if client.check_name(&name, team_slug).await? {
             spinner.stop("Name confirmed");
             return Ok(name);
         } else {

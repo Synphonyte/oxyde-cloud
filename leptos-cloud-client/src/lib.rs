@@ -42,13 +42,13 @@ impl Client {
     pub async fn check_name(
         self,
         app_name: &str,
-        team_id: Option<i64>,
+        team_slug: Option<&String>,
     ) -> Result<bool, ReqwestJsonError> {
         let res: CheckNameResponse = self
             .post("check-name")
             .json(&CheckNameRequest {
                 app_name: app_name.to_string(),
-                team_id,
+                team_slug: team_slug.cloned(),
             })?
             .send()
             .await?;
@@ -63,7 +63,7 @@ impl Client {
     pub async fn upload_file(
         self,
         app_name: impl AsRef<str>,
-        team_id: Option<i64>,
+        team_slug: Option<&String>,
         path: impl AsRef<Path>,
     ) -> Result<(), UploadFileError> {
         let file = tokio::fs::File::open(path.as_ref()).await?;
@@ -80,7 +80,7 @@ impl Client {
                 AppMeta::name(),
                 AppMeta {
                     name: app_name.as_ref().to_string(),
-                    team_id,
+                    team_slug: team_slug.cloned(),
                 }
                 .to_string_value(),
             )

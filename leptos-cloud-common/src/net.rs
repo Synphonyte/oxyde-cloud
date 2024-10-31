@@ -8,13 +8,13 @@ pub struct LoginResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Team {
-    pub id: i64,
+    pub slug: String,
     pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CheckNameRequest {
-    pub team_id: Option<i64>,
+    pub team_slug: Option<String>,
     pub app_name: String,
 }
 
@@ -33,23 +33,23 @@ pub struct LogResponse {
     pub log: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AppMeta {
     pub name: String,
-    pub team_id: Option<i64>,
+    pub team_slug: Option<String>,
 }
 
 static NAME: HeaderName = HeaderName::from_static("app-meta");
 
 impl AppMeta {
     pub fn to_string_value(&self) -> String {
-        let team_id = if let Some(team_id) = self.team_id {
-            team_id.to_string()
+        let team_slug = if let Some(team_slug) = self.team_slug.as_ref() {
+            team_slug.clone()
         } else {
             "".to_string()
         };
 
-        format!("{},{}", team_id, self.name)
+        format!("{},{}", team_slug, self.name)
     }
 }
 
@@ -67,8 +67,12 @@ impl Header for AppMeta {
             .next()
             .and_then(|v| v.to_str().ok())
             .map(|v| {
-                v.split_once(',').map(|(team_id, name)| Self {
-                    team_id: team_id.parse().ok(),
+                v.split_once(',').map(|(team_slug, name)| Self {
+                    team_slug: if team_slug.is_empty() {
+                        None
+                    } else {
+                        Some(team_slug.to_string())
+                    },
                     name: name.to_string(),
                 })
             })

@@ -82,7 +82,7 @@ async fn deploy_inner(
         progress.set_message(format!("Uploading {}...", file.display()));
         client
             .clone()
-            .upload_file(&config.app.name, config.app.team_id, file)
+            .upload_file(&config.app.name, config.app.team_slug.as_ref(), file)
             .await?;
         progress.inc(1);
     }

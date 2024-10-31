@@ -27,10 +27,10 @@ enum Commands {
         #[arg(short, long)]
         name: Option<String>,
 
-        /// The id of the team this app should belong to. If none is provided, the app will
-        /// belong to the user exclusively.
+        /// The identifier name of the team this app should belong to. If none is provided,
+        /// the app will belong to the user exclusively.
         #[arg(short, long)]
-        team_id: Option<i64>,
+        team_slug: Option<String>,
 
         /// Sets a custom config file. Defaults to `leptos-cloud.toml`
         #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
@@ -101,8 +101,8 @@ async fn main() -> Result<(), Error> {
         Commands::Logout => {
             commands::logout::logout()?;
         }
-        Commands::Init { name, team_id, config } => {
-            commands::init::init(name, team_id, config).await?;
+        Commands::Init { name, team_slug, config } => {
+            commands::init::init(name, team_slug, config).await?;
         }
         Commands::Build { cargo_leptos_opts } => {
             commands::build::build(cargo_leptos_opts).await?;
