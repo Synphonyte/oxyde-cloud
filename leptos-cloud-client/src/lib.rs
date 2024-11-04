@@ -12,12 +12,12 @@ use tokio_util::codec::{BytesCodec, FramedRead};
 pub use errors::*;
 use leptos_cloud_common::config::CloudConfig;
 use leptos_cloud_common::net::{
-    AppMeta, CheckNameRequest, CheckNameResponse, LogRequest, LogResponse, LoginResponse,
-    SuccessResponse, Team,
+    AppMeta, CheckAvailabilityResponse, LogRequest, LogResponse, LoginResponse, NewAppRequest,
+    NewTeamRequest, SetTeamNameRequest, SuccessResponse, Team,
 };
 
-const BASE_URL: &str = "http://localhost:3000/api/v1/";
-// const BASE_URL: &str = "https://leptos.cloud/api/v1/";
+const BASE_URL: Option<&str> = option_env!("LEPTOS_CLOUD_API_URL");
+const DEFAULT_BASE_URL: &str = "https://leptos.cloud/api/v1/";
 
 #[derive(Clone)]
 pub struct Client {
@@ -39,21 +39,46 @@ impl Client {
         Ok(teams)
     }
 
-    pub async fn check_name(
-        self,
-        app_name: &str,
-        team_slug: Option<&String>,
-    ) -> Result<bool, ReqwestJsonError> {
-        let res: CheckNameResponse = self
-            .post("check-name")
-            .json(&CheckNameRequest {
-                app_name: app_name.to_string(),
-                team_slug: team_slug.cloned(),
+    pub async fn new_app(self, app_slug: &str, team_slug: &str) -> Result<bool, ReqwestJsonError> {
+        let CheckAvailabilityResponse { available } = self
+            .post("apps/new")
+            .json(&NewAppRequest {
+                app_slug: app_slug.to_string(),
+                team_slug: team_slug.to_string(),
             })?
             .send()
             .await?;
 
-        Ok(res.available)
+        Ok(available)
+    }
+
+    pub async fn new_team(self, team_slug: &str) -> Result<bool, ReqwestJsonError> {
+        let CheckAvailabilityResponse { available } = self
+            .post("teams/new")
+            .json(&NewTeamRequest {
+                team_slug: team_slug.to_string(),
+            })?
+            .send()
+            .await?;
+
+        Ok(available)
+    }
+
+    pub async fn set_team_name(
+        self,
+        team_slug: &str,
+        team_name: &str,
+    ) -> Result<(), ReqwestJsonError> {
+        let _: SuccessResponse = self
+            .post("teams/name")
+            .json(&SetTeamNameRequest {
+                team_slug: team_slug.to_string(),
+                team_name: team_name.to_string(),
+            })?
+            .send()
+            .await?;
+
+        Ok(())
     }
 
     pub async fn login(self) -> Result<LoginResponse, ReqwestJsonError> {
@@ -62,8 +87,7 @@ impl Client {
 
     pub async fn upload_file(
         self,
-        app_name: impl AsRef<str>,
-        team_slug: Option<&String>,
+        app_slug: impl AsRef<str>,
         path: impl AsRef<Path>,
     ) -> Result<(), UploadFileError> {
         let file = tokio::fs::File::open(path.as_ref()).await?;
@@ -74,13 +98,12 @@ impl Client {
         let form = Form::new().part("file", stream_part);
 
         let _: SuccessResponse = self
-            .post("upload-file")
+            .post("apps/upload-file")
             .multipart(form)
             .header(
                 AppMeta::name(),
                 AppMeta {
-                    name: app_name.as_ref().to_string(),
-                    team_slug: team_slug.cloned(),
+                    app_slug: app_slug.as_ref().to_string(),
                 }
                 .to_string_value(),
             )
@@ -91,7 +114,7 @@ impl Client {
     }
 
     pub async fn upload_done(self, config: &CloudConfig) -> Result<(), ReqwestJsonError> {
-        let _: SuccessResponse = self.post("upload-done").json(config)?.send().await?;
+        let _: SuccessResponse = self.post("apps/upload-done").json(config)?.send().await?;
 
         Ok(())
     }
@@ -121,7 +144,9 @@ impl Client {
     }
 
     fn build_route(route: &str) -> String {
-        format!("{BASE_URL}{route}")
+        let base_url = std::env::var("LEPTOS_CLOUD_API_URL")
+            .unwrap_or(BASE_URL.unwrap_or(DEFAULT_BASE_URL).to_string());
+        format!("{base_url}{route}")
     }
 }
 

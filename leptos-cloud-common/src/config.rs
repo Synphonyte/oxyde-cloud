@@ -16,8 +16,7 @@ pub struct CloudConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AppConfig {
-    pub name: String,
-    pub team_slug: Option<String>,
+    pub slug: String,
 }
 
 impl AppConfig {
@@ -29,15 +28,15 @@ impl AppConfig {
 
     pub const MIN_LENGTH: usize = 5;
 
-    pub fn is_valid_name(name: impl AsRef<str>) -> bool {
-        name.as_ref().len() >= Self::MIN_LENGTH
-            && name
+    pub fn is_valid_slug(slug: impl AsRef<str>) -> bool {
+        slug.as_ref().len() >= Self::MIN_LENGTH
+            && slug
                 .as_ref()
                 .chars()
                 .next()
                 .map(|c| c.is_ascii_lowercase())
                 .unwrap_or(false)
-            && name
+            && slug
                 .as_ref()
                 .chars()
                 .all(|c| Self::ALLOWED_CHARS.contains(&c))
@@ -65,6 +64,6 @@ impl CloudConfig {
     }
 
     pub fn deployed_url(&self) -> String {
-        format!("https://{}.leptos.app", self.app.name)
+        format!("https://{}.leptos.app", self.app.slug)
     }
 }

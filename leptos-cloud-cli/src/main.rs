@@ -120,7 +120,7 @@ async fn main() -> Result<(), Error> {
             let name = if let Some(name) = name {
                 name
             } else if let Some(config) = config {
-                config.app.name
+                config.app.slug
             } else {
                 return Err(Error::Name("If you don't execute this command in a folder with a config you have to provide an app name!".to_string()));
             };

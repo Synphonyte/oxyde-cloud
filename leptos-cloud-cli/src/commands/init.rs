@@ -1,10 +1,29 @@
 use crate::api_key::api_key;
 use cliclack::log::remark;
 use cliclack::{input, intro, outro, select, spinner};
+use heck::ToTitleCase;
+use lazy_static::lazy_static;
 use leptos_cloud_client::{Client, ReqwestJsonError};
-use leptos_cloud_common::config::{AppConfig, CloudConfig};
+use leptos_cloud_common::config::AppConfig;
 use std::path::PathBuf;
+use tera::{Context, Tera};
 use thiserror::Error;
+
+lazy_static! {
+    pub static ref TEMPLATES: Tera = {
+        let mut tera = Tera::default();
+
+        if let Err(e) = tera.add_raw_template(
+            "leptos-cloud.toml",
+            include_str!("../../templates/leptos-cloud.toml"),
+        ) {
+            println!("Parsing error(s): {}", e);
+            ::std::process::exit(1);
+        }
+        
+        tera
+    };
+}
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -19,10 +38,13 @@ pub enum Error {
 
     #[error("TOML error: {0}")]
     Toml(#[from] toml::ser::Error),
+
+    #[error("Tera error: {0}")]
+    Tera(#[from] tera::Error),
 }
 
 pub async fn init(
-    name: Option<String>,
+    app_slug: Option<String>,
     team_slug: Option<String>,
     config_file: PathBuf,
 ) -> Result<(), Error> {
@@ -30,27 +52,23 @@ pub async fn init(
 
     let team_slug = match team_slug {
         Some(team_slug) => {
-            remark(&format!("Team ID provided: {}", team_slug))?;
-            Some(team_slug)
+            remark(&format!("Team provided: {}", team_slug))?;
+            team_slug
         }
         None => input_team_slug().await?,
     };
 
-    let name = match name {
-        Some(name) => {
-            remark(&format!("App name provided: {}", name))?;
-            name
+    let app_slug = match app_slug {
+        Some(slug) => {
+            remark(&format!("App slug provided: {}", slug))?;
+            slug
         }
-        None => input_name(team_slug.as_ref()).await?,
+        None => input_app_slug(&team_slug).await?,
     };
 
-    let config = CloudConfig {
-        app: AppConfig { name, team_slug },
-        env: Default::default(),
-        leptos_config: Default::default(),
-    };
-
-    let config_str = toml::to_string_pretty(&config)?;
+    let mut context = Context::new();
+    context.insert("app_slug", &app_slug);
+    let config_str = TEMPLATES.render("leptos-cloud.toml", &context)?;
 
     std::fs::write(&config_file, config_str)?;
 
@@ -59,7 +77,7 @@ pub async fn init(
     Ok(())
 }
 
-async fn input_team_slug() -> Result<Option<String>, Error> {
+async fn input_team_slug() -> Result<String, Error> {
     let api_key = api_key()?;
 
     let spinner = spinner();
@@ -70,18 +88,22 @@ async fn input_team_slug() -> Result<Option<String>, Error> {
     let teams = client.teams().await?;
 
     if teams.is_empty() {
-        spinner.stop("No teams found. Creating a personal app.");
-        return Ok(None);
+        spinner.stop("No teams found.");
+        return input_new_team(api_key).await;
+    }
+
+    if teams.len() == 1 {
+        spinner.stop(format!("Using team: {}", teams[0].name));
+        return Ok(teams[0].slug.clone());
     }
 
     spinner.clear();
 
     let team_slug = select("Select the team this app should belong to:")
-        .item(None, "Personal", "Not part of a team")
         .items(
             &teams
                 .into_iter()
-                .map(|t| (Some(t.slug), t.name, ""))
+                .map(|t| (t.slug, t.name, ""))
                 .collect::<Vec<_>>(),
         )
         .interact()?;
@@ -89,31 +111,90 @@ async fn input_team_slug() -> Result<Option<String>, Error> {
     Ok(team_slug)
 }
 
-async fn input_name(team_slug: Option<&String>) -> Result<String, Error> {
-    let api_key = api_key()?;
-
+async fn input_new_team(api_key: String) -> Result<String, Error> {
     loop {
-        let name: String = input("Enter app name [a-z0-9_-]:")
-            .placeholder("your-app-name-42")
+        let team_slug: String = input("Creating new team. Enter unique team slug [a-z0-9_-]:")
+            .placeholder("your-team-name-42")
             .validate_interactively(|input: &String| {
-                if AppConfig::is_valid_name(input) {
+                if AppConfig::is_valid_slug(input) {
                     Ok(())
                 } else {
-                    Err(format!("App name must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_LENGTH))
+                    Err(format!("Team slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_LENGTH))
                 }
             })
             .interact()?;
 
         let spinner = spinner();
-        spinner.start(format!(r#"Checking availability for name "{name}"..."#));
+        spinner.start(format!(
+            r#"Checking availability for team slug "{team_slug}"..."#
+        ));
 
         let client = Client::new(api_key.clone());
 
-        if client.check_name(&name, team_slug).await? {
-            spinner.stop("Name confirmed");
-            return Ok(name);
+        if client.new_team(&team_slug).await? {
+            spinner.stop("Slug confirmed");
+
+            input_new_team_name(&team_slug, api_key).await?;
+
+            return Ok(team_slug);
         } else {
-            spinner.error("App name is not available. Please try again.");
+            spinner.error(format!(
+                r#"Team slug "{team_slug}" is not available. Please try another one."#
+            ));
+        }
+    }
+}
+
+async fn input_new_team_name(team_slug: &str, api_key: String) -> Result<(), Error> {
+    let default_name = team_slug.to_title_case();
+
+    let mut name: String = input("Enter team display name:")
+        .default_input(&default_name)
+        .interact()?;
+
+    if name.is_empty() {
+        name = default_name;
+    }
+
+    let spinner = spinner();
+    spinner.start(format!(r#"Saving team name "{name}"..."#));
+
+    let client = Client::new(api_key);
+
+    client.set_team_name(team_slug, &name).await?;
+
+    spinner.stop("Saved.");
+
+    Ok(())
+}
+
+async fn input_app_slug(team_slug: &str) -> Result<String, Error> {
+    let api_key = api_key()?;
+
+    loop {
+        let app_slug: String = input("Enter app slug [a-z0-9_-]:")
+            .placeholder("your-app-name-42")
+            .validate_interactively(|input: &String| {
+                if AppConfig::is_valid_slug(input) {
+                    Ok(())
+                } else {
+                    Err(format!("App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_LENGTH))
+                }
+            })
+            .interact()?;
+
+        let spinner = spinner();
+        spinner.start(format!(r#"Checking availability for slug "{app_slug}"..."#));
+
+        let client = Client::new(api_key.clone());
+
+        if client.new_app(&app_slug, team_slug).await? {
+            spinner.stop("Slug confirmed");
+            return Ok(app_slug);
+        } else {
+            spinner.error(format!(
+                r#"App slug "{app_slug}" is not available. Please try another one."#
+            ));
         }
     }
 }

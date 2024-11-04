@@ -13,14 +13,25 @@ pub struct Team {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct CheckNameRequest {
-    pub team_slug: Option<String>,
-    pub app_name: String,
+pub struct NewAppRequest {
+    pub team_slug: String,
+    pub app_slug: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct CheckNameResponse {
+pub struct NewTeamRequest {
+    pub team_slug: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CheckAvailabilityResponse {
     pub available: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SetTeamNameRequest {
+    pub team_slug: String,
+    pub team_name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -35,21 +46,14 @@ pub struct LogResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AppMeta {
-    pub name: String,
-    pub team_slug: Option<String>,
+    pub app_slug: String,
 }
 
 static NAME: HeaderName = HeaderName::from_static("app-meta");
 
 impl AppMeta {
     pub fn to_string_value(&self) -> String {
-        let team_slug = if let Some(team_slug) = self.team_slug.as_ref() {
-            team_slug.clone()
-        } else {
-            "".to_string()
-        };
-
-        format!("{},{}", team_slug, self.name)
+        self.app_slug.clone()
     }
 }
 
@@ -66,17 +70,9 @@ impl Header for AppMeta {
         values
             .next()
             .and_then(|v| v.to_str().ok())
-            .map(|v| {
-                v.split_once(',').map(|(team_slug, name)| Self {
-                    team_slug: if team_slug.is_empty() {
-                        None
-                    } else {
-                        Some(team_slug.to_string())
-                    },
-                    name: name.to_string(),
-                })
+            .map(|v| Self {
+                app_slug: v.to_string(),
             })
-            .flatten()
             .ok_or_else(headers_core::Error::invalid)
     }
 

@@ -54,12 +54,12 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
 
     debug!("Found files: {:#?}", files);
 
-    intro(format!("Deploying app {}", config.app.name))?;
+    intro(format!("Deploying app {}", config.app.slug))?;
 
     let file_count = files.len() as u64;
 
     let progress = progress_bar(file_count + 1);
-    progress.start(format!(r#"Checking app name "{}"..."#, config.app.name));
+    progress.start(format!(r#"Checking app name "{}"..."#, config.app.slug));
 
     if let Err(err) = deploy_inner(config, client, &mut files, &progress).await {
         progress.error(format!("Deploy failed: {:?}", err));
@@ -82,7 +82,7 @@ async fn deploy_inner(
         progress.set_message(format!("Uploading {}...", file.display()));
         client
             .clone()
-            .upload_file(&config.app.name, config.app.team_slug.as_ref(), file)
+            .upload_file(&config.app.slug, file)
             .await?;
         progress.inc(1);
     }
