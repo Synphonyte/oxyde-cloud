@@ -26,10 +26,10 @@ impl AppConfig {
         '-', '_',
     ];
 
-    pub const MIN_LENGTH: usize = 5;
+    pub const MIN_SLUG_LENGTH: usize = 5;
 
     pub fn is_valid_slug(slug: impl AsRef<str>) -> bool {
-        slug.as_ref().len() >= Self::MIN_LENGTH
+        slug.as_ref().len() >= Self::MIN_SLUG_LENGTH
             && slug
                 .as_ref()
                 .chars()
