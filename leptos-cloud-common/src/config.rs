@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 use toml::Table;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CloudConfig {
     pub app: AppConfig,
 
@@ -14,7 +14,7 @@ pub struct CloudConfig {
     pub leptos_config: leptos_config::ConfFile,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AppConfig {
     pub slug: String,
 }
