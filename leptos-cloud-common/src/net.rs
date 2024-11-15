@@ -96,8 +96,7 @@ impl From<i16> for DeploymentStatus {
         match value {
             0 => DeploymentStatus::Pending,
             1 => DeploymentStatus::Success,
-            2 => DeploymentStatus::Failure,
-            _ => panic!("Unexpected value for DeploymentStatus: {}", value),
+            _ => DeploymentStatus::Failure,
         }
     }
 }
