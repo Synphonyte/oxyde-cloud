@@ -91,6 +91,16 @@ pub enum DeploymentStatus {
     Failure = 2,
 }
 
+impl From<i16> for DeploymentStatus {
+    fn from(value: i16) -> Self {
+        match value {
+            0 => DeploymentStatus::Pending,
+            1 => DeploymentStatus::Success,
+            _ => DeploymentStatus::Failure,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SuccessResponse {
     pub success: bool,
