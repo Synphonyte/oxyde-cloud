@@ -1,0 +1,38 @@
+on:
+  push:
+    # Pattern matched against refs/tags
+    tags:
+      - '*'           # Push events to every tag not containing /
+  workflow_dispatch:
+
+name: Cloud Deploy Workflow
+
+permissions: write-all
+
+jobs:
+  deploy:
+    name: Deploy To Leptos Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: {{ toolchain }}
+          profile: minimal
+          override: true
+          components: rustfmt, clippy, rust-src
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+
+#       - name: Check formatting
+#         run: cargo fmt --check
+#       - name: Clippy
+#         run: cargo clippy --features docs,math --tests -- -D warnings
+#       - name: Run tests
+#         run: cargo test
+
+      - name: Deploy to Leptos Cloud
+        uses: Synphonyte/leptos-cloud-deploy@v1
+        with:
+          {% raw %}api-token: ${{ secrets.LEPTOS_CLOUD_TOKEN }}{% endraw %}
+

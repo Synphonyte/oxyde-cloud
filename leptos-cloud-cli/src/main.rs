@@ -35,6 +35,10 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
         config: PathBuf,
     },
+
+    /// Configure how the project should be deployed to the cloud
+    DeployConfig,
+
     Log {
         /// The name of the project to get the logs for. Defaults to the name from the config in
         /// the current directory
@@ -55,6 +59,8 @@ enum Error {
     Logout(#[from] commands::logout::Error),
     #[error("Init error: {0}")]
     Init(#[from] commands::init::Error),
+    #[error("DeployConfig error: {0}")]
+    DeployConfig(#[from] commands::deploy_config::Error),
     #[error("Config loading error: {0}")]
     Config(#[from] leptos_cloud_common::config::Error),
     #[error("Log error: {0}")]
@@ -82,6 +88,9 @@ async fn main() -> Result<(), Error> {
             config,
         } => {
             commands::init::init(name, team_slug, config).await?;
+        }
+        Commands::DeployConfig => {
+            commands::deploy_config::init_deploy_config()?;
         }
         Commands::Log { name, config } => {
             let config = CloudConfig::load(&config).await.ok();
