@@ -4,7 +4,7 @@ resolver = "2"
 members = [
     "leptos-cloud-common",
     "leptos-cloud-cli",
-    "leptos-cloud-client",
+    "leptos-cloud-client", "leptos-cloud-uploader",
 ]
 
 exclude = ["examples"]

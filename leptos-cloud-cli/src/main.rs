@@ -1,7 +1,6 @@
 mod api_key;
 mod commands;
 
-use cargo_leptos::config::Opts;
 use clap::{Parser, Subcommand};
 use leptos_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
@@ -36,20 +35,6 @@ enum Commands {
         #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
         config: PathBuf,
     },
-    /// Build the project locally
-    Build {
-        #[clap(flatten)]
-        cargo_leptos_opts: Opts,
-    },
-    /// Build the project locally and deploy it to the cloud
-    Deploy {
-        /// Sets a custom config file. Defaults to `leptos-cloud.toml`
-        #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
-        config: PathBuf,
-
-        #[clap(flatten)]
-        cargo_leptos_opts: Opts,
-    },
     Log {
         /// The name of the project to get the logs for. Defaults to the name from the config in
         /// the current directory
@@ -70,10 +55,6 @@ enum Error {
     Logout(#[from] commands::logout::Error),
     #[error("Init error: {0}")]
     Init(#[from] commands::init::Error),
-    #[error("Build error: {0}")]
-    Build(#[from] anyhow::Error),
-    #[error("Deploy error: {0}")]
-    Deploy(#[from] commands::deploy::Error),
     #[error("Config loading error: {0}")]
     Config(#[from] leptos_cloud_common::config::Error),
     #[error("Log error: {0}")]
@@ -86,13 +67,7 @@ enum Error {
 async fn main() -> Result<(), Error> {
     let args = Args::parse();
 
-    if !matches!(
-        args.command,
-        Commands::Build { .. } | Commands::Deploy { .. }
-    ) {
-        // TODO : unify with cargo-leptos logger
-        simple_logger::init_with_level(log::Level::Info).unwrap();
-    }
+    simple_logger::init_with_level(log::Level::Info).unwrap();
 
     match args.command {
         Commands::Login => {
@@ -101,18 +76,12 @@ async fn main() -> Result<(), Error> {
         Commands::Logout => {
             commands::logout::logout()?;
         }
-        Commands::Init { name, team_slug, config } => {
-            commands::init::init(name, team_slug, config).await?;
-        }
-        Commands::Build { cargo_leptos_opts } => {
-            commands::build::build(cargo_leptos_opts).await?;
-        }
-        Commands::Deploy {
+        Commands::Init {
+            name,
+            team_slug,
             config,
-            cargo_leptos_opts,
         } => {
-            let config = CloudConfig::load(&config).await?;
-            commands::deploy::deploy(&config, cargo_leptos_opts).await?;
+            commands::init::init(name, team_slug, config).await?;
         }
         Commands::Log { name, config } => {
             let config = CloudConfig::load(&config).await.ok();

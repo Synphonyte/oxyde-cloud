@@ -1,0 +1,16 @@
+[package]
+name = "leptos-cloud-uploader"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.93"
+cargo-leptos = "0.2.21"
+clap = { version = "4.5.19", features = ["derive"] }
+leptos-cloud-client.workspace = true
+leptos-cloud-common.workspace = true
+log = "0.4.22"
+reqwest = "0.12.9"
+thiserror = "2.0.3"
+tokio = "1.40.0"
+walkdir = "2.5.0"

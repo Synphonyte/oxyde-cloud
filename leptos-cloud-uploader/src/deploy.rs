@@ -1,10 +1,8 @@
-use crate::api_key::api_key;
-use crate::commands::build;
 use cargo_leptos::config::Opts;
-use cliclack::{intro, outro, progress_bar, ProgressBar};
 use leptos_cloud_client::{Client, ReqwestJsonError, UploadFileError};
 use leptos_cloud_common::config::CloudConfig;
-use log::debug;
+use log::{debug, error, info};
+use std::env::VarError;
 use std::ffi::OsStr;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
@@ -15,9 +13,6 @@ use walkdir::WalkDir;
 pub enum Error {
     #[error("Build error: {0}")]
     Build(#[from] anyhow::Error),
-
-    #[error("Keyring error: {0}")]
-    Keyring(#[from] keyring::Error),
 
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
@@ -30,10 +25,13 @@ pub enum Error {
 
     #[error("Deployment done error: {0}")]
     Done(#[from] reqwest::Error),
+
+    #[error("Error reading variable `LEPTOS_CLOUD_API_KEY`: {0}")]
+    ApiKeyEnv(#[from] VarError),
 }
 
 pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {
-    build::build(cargo_leptos_opts.clone()).await?;
+    crate::build::build(cargo_leptos_opts.clone()).await?;
 
     let target_dir = "target";
     let server_bin_dir = if cargo_leptos_opts.release {
@@ -43,7 +41,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     };
     let frontend_dir = "site";
 
-    let api_key = api_key()?;
+    let api_key = std::env::var("LEPTOS_CLOUD_API_KEY")?;
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);
@@ -54,20 +52,15 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
 
     debug!("Found files: {:#?}", files);
 
-    intro(format!("Deploying app {}", config.app.slug))?;
+    info!("Deploying app {}", config.app.slug);
+    info!(r#"Checking app name "{}"..."#, config.app.slug);
 
-    let file_count = files.len() as u64;
-
-    let progress = progress_bar(file_count + 1);
-    progress.start(format!(r#"Checking app name "{}"..."#, config.app.slug));
-
-    if let Err(err) = deploy_inner(config, client, &mut files, &progress).await {
-        progress.error(format!("Deploy failed: {:?}", err));
+    if let Err(err) = deploy_inner(config, client, &mut files).await {
+        error!("Deploy failed: {:?}", err);
         return Err(err);
     }
 
-    progress.stop("Deployed");
-    outro(format!("App deployed to {}", config.deployed_url()))?;
+    info!("App deployed to {}", config.deployed_url());
 
     Ok(())
 }
@@ -76,21 +69,14 @@ async fn deploy_inner(
     config: &CloudConfig,
     client: Client,
     files: &mut Vec<PathBuf>,
-    progress: &ProgressBar,
 ) -> Result<(), Error> {
     for file in files {
-        progress.set_message(format!("Uploading {}...", file.display()));
-        client
-            .clone()
-            .upload_file(&config.app.slug, file)
-            .await?;
-        progress.inc(1);
+        debug!("Uploading {}...", file.display());
+        client.clone().upload_file(&config.app.slug, file).await?;
     }
 
-    progress.set_message("Deploying app...");
+    debug!("Deploying app...");
     client.upload_done(config).await?;
-
-    progress.inc(1);
 
     Ok(())
 }
