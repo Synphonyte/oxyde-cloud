@@ -1,7 +1,6 @@
 use cargo_leptos::config::Opts;
 use leptos_cloud_client::{Client, ReqwestJsonError, UploadFileError};
 use leptos_cloud_common::config::CloudConfig;
-use log::{debug, error, info};
 use std::env::VarError;
 use std::ffi::OsStr;
 use std::fs::read_dir;
@@ -50,17 +49,16 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     let mut files = recursive_files_from_dir(frontend_path);
     files.append(&mut server_files(server_path)?);
 
-    debug!("Found files: {:#?}", files);
+    log::debug!(target:"cargo_leptos", "Found files: {:#?}", files);
 
-    info!("Deploying app {}", config.app.slug);
-    info!(r#"Checking app name "{}"..."#, config.app.slug);
+    log::info!(target:"cargo_leptos", "Deploying app {}", config.app.slug);
 
     if let Err(err) = deploy_inner(config, client, &mut files).await {
-        error!("Deploy failed: {:?}", err);
+        log::error!(target:"cargo_leptos", "Deploy failed: {:?}", err);
         return Err(err);
     }
 
-    info!("App deployed to {}", config.deployed_url());
+    log::info!(target:"cargo_leptos", "Deployed app to {}", config.deployed_url());
 
     Ok(())
 }
@@ -71,11 +69,11 @@ async fn deploy_inner(
     files: &mut Vec<PathBuf>,
 ) -> Result<(), Error> {
     for file in files {
-        debug!("Uploading {}...", file.display());
+        log::debug!(target:"cargo_leptos", "Uploading {}...", file.display());
         client.clone().upload_file(&config.app.slug, file).await?;
     }
 
-    debug!("Deploying app...");
+    log::debug!(target:"cargo_leptos", "Deploying app...");
     client.upload_done(config).await?;
 
     Ok(())

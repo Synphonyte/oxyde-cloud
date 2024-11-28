@@ -6,7 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/leptos-cloud-cli/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/leptos-cloud-client/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/leptos-cloud-common/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/leptos-cloud-uploader/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/leptos-cloud-deploy/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/examples/simple/target" />
       <excludeFolder url="file://$MODULE_DIR$/leptos-cloud-cli/target" />
       <excludeFolder url="file://$MODULE_DIR$/leptos-cloud-common/target" />

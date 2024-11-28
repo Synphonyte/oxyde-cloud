@@ -1,5 +1,5 @@
 [package]
-name = "leptos-cloud-uploader"
+name = "leptos-cloud-deploy"
 version = "0.1.0"
 edition = "2021"
 
