@@ -27,6 +27,18 @@ pub enum Error {
 
     #[error("Error reading variable `LEPTOS_CLOUD_API_KEY`: {0}")]
     ApiKeyEnv(#[from] VarError),
+
+    #[error("Config loading error: {0}")]
+    Config(#[from] leptos_cloud_common::config::Error),
+}
+
+pub async fn deploy_with_config_file(
+    config: &PathBuf,
+    cargo_leptos_opts: Opts,
+) -> Result<(), Error> {
+    let config = CloudConfig::load(&config).await?;
+    deploy(&config, cargo_leptos_opts).await?;
+    Ok(())
 }
 
 pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {

@@ -1,4 +1,4 @@
-use crate::deploy::deploy;
+use crate::deploy::deploy_with_config_file;
 use cargo_leptos::config::Opts;
 use clap::Parser;
 use leptos_cloud_common::config::CloudConfig;
@@ -7,14 +7,6 @@ use thiserror::Error;
 
 mod build;
 mod deploy;
-
-#[derive(Debug, Error)]
-enum Error {
-    #[error("Deploy error: {0}")]
-    Deploy(#[from] deploy::Error),
-    #[error("Config loading error: {0}")]
-    Config(#[from] leptos_cloud_common::config::Error),
-}
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -27,6 +19,15 @@ struct Args {
     cargo_leptos_opts: Opts,
 }
 
+impl Default for Args {
+    fn default() -> Self {
+        Self {
+            config: PathBuf::from("leptos-cloud.toml"),
+            cargo_leptos_opts: Opts::default(),
+        }
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let Args {
@@ -34,8 +35,7 @@ async fn main() -> Result<(), Error> {
         cargo_leptos_opts,
     } = Args::parse();
 
-    let config = CloudConfig::load(&config).await?;
-    deploy(&config, cargo_leptos_opts).await?;
+    deploy_with_config_file(&config, cargo_leptos_opts).await?;
 
     Ok(())
 }
