@@ -34,5 +34,6 @@ jobs:
       - name: Deploy to Leptos Cloud
         uses: Synphonyte/leptos-cloud-deploy-action@v1
         with:
-          {% raw %}token: ${{ secrets.LEPTOS_CLOUD_TOKEN }}{% endraw %}
+          {% raw %}api-token: ${{ secrets.LEPTOS_CLOUD_TOKEN }}{% endraw %}
+          cloud-config-file: leptos-cloud.toml
 
