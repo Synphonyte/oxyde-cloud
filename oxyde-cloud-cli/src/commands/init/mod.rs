@@ -19,7 +19,7 @@ pub async fn init(
     team_slug: Option<String>,
     config_file: PathBuf,
 ) -> Result<(), Error> {
-    intro("Leptos Cloud app init")?;
+    intro("Oxyde Cloud app init")?;
 
     let team_slug = match team_slug {
         Some(team_slug) => {
@@ -39,7 +39,7 @@ pub async fn init(
 
     let mut context = Context::new();
     context.insert("app_slug", &app_slug);
-    let config_str = TEMPLATES.render("leptos-cloud.toml", &context)?;
+    let config_str = TEMPLATES.render("oxyde-cloud.toml", &context)?;
 
     std::fs::write(&config_file, config_str)?;
 

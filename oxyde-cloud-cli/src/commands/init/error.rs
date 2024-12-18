@@ -1,4 +1,4 @@
-use leptos_cloud_client::ReqwestJsonError;
+use oxyde_cloud_client::ReqwestJsonError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/leptos-cloud.iml" filepath="$PROJECT_DIR$/.idea/leptos-cloud.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/oxyde-cloud.iml" filepath="$PROJECT_DIR$/.idea/oxyde-cloud.iml" />
     </modules>
   </component>
 </project>

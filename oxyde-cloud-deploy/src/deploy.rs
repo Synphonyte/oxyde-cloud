@@ -1,6 +1,6 @@
 use cargo_leptos::config::Opts;
-use leptos_cloud_client::{Client, ReqwestJsonError, UploadFileError};
-use leptos_cloud_common::config::CloudConfig;
+use oxyde_cloud_client::{Client, ReqwestJsonError, UploadFileError};
+use oxyde_cloud_common::config::CloudConfig;
 use std::env::VarError;
 use std::ffi::OsStr;
 use std::fs::read_dir;
@@ -29,7 +29,7 @@ pub enum Error {
     ApiKeyEnv(#[from] VarError),
 
     #[error("Config loading error: {0}")]
-    Config(#[from] leptos_cloud_common::config::Error),
+    Config(#[from] oxyde_cloud_common::config::Error),
 }
 
 pub async fn deploy_with_config_file(

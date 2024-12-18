@@ -11,7 +11,7 @@ permissions: write-all
 
 jobs:
   deploy:
-    name: Deploy To Leptos Cloud
+    name: Deploy To Oxyde Cloud
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,9 +31,9 @@ jobs:
 #       - name: Run tests
 #         run: cargo test
 
-      - name: Deploy to Leptos Cloud
-        uses: Synphonyte/leptos-cloud-deploy-action@v1
+      - name: Deploy to Oxyde Cloud
+        uses: Synphonyte/oxyde-cloud-deploy-action@v1
         with:
           {% raw %}api-token: ${{ secrets.LEPTOS_CLOUD_TOKEN }}{% endraw %}
-          cloud-config-file: leptos-cloud.toml
+          cloud-config-file: oxyde-cloud.toml
 

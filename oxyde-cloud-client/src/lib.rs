@@ -10,8 +10,8 @@ use std::path::Path;
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub use errors::*;
-use leptos_cloud_common::config::CloudConfig;
-use leptos_cloud_common::net::{
+use oxyde_cloud_common::config::CloudConfig;
+use oxyde_cloud_common::net::{
     AppMeta, CheckAvailabilityResponse, LogRequest, LogResponse, LoginResponse, NewAppRequest,
     NewTeamRequest, SetTeamNameRequest, SuccessResponse, Team,
 };

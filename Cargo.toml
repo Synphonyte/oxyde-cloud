@@ -2,17 +2,17 @@
 resolver = "2"
 
 members = [
-    "leptos-cloud-common",
-    "leptos-cloud-cli",
-    "leptos-cloud-client",
-    "leptos-cloud-deploy",
+    "oxyde-cloud-common",
+    "oxyde-cloud-cli",
+    "oxyde-cloud-client",
+    "oxyde-cloud-deploy",
 ]
 
 exclude = ["examples"]
 
-default-members = ["leptos-cloud-cli"]
+default-members = ["oxyde-cloud-cli"]
 
 [workspace.dependencies]
-leptos-cloud-common = { path = "./leptos-cloud-common", version = "0.1.0" }
-leptos-cloud-client = { path = "./leptos-cloud-client", version = "0.1.0" }
+oxyde-cloud-common = { path = "./oxyde-cloud-common", version = "0.1.0" }
+oxyde-cloud-client = { path = "./oxyde-cloud-client", version = "0.1.0" }
 serde = { version = "1", features = ["derive"] }

@@ -3,7 +3,7 @@ use crate::commands::logout;
 use crate::commands::logout::logout;
 use cliclack::log::remark;
 use cliclack::{input, intro, outro, outro_cancel, spinner};
-use leptos_cloud_client::Client;
+use oxyde_cloud_client::Client;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

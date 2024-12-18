@@ -1,7 +1,7 @@
 use crate::deploy::deploy_with_config_file;
 use cargo_leptos::config::Opts;
 use clap::Parser;
-use leptos_cloud_common::config::CloudConfig;
+use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -11,8 +11,8 @@ mod deploy;
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Sets a custom config file. Defaults to `leptos-cloud.toml`
-    #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
+    /// Sets a custom config file. Defaults to `oxyde-cloud.toml`
+    #[arg(short, long, value_name = "FILE", default_value = "oxyde-cloud.toml")]
     config: PathBuf,
 
     #[clap(flatten)]
@@ -22,7 +22,7 @@ struct Args {
 impl Default for Args {
     fn default() -> Self {
         Self {
-            config: PathBuf::from("leptos-cloud.toml"),
+            config: PathBuf::from("oxyde-cloud.toml"),
             cargo_leptos_opts: Opts::default(),
         }
     }

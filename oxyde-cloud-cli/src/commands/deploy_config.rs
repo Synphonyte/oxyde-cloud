@@ -43,7 +43,7 @@ impl std::fmt::Display for RustToolchain {
 }
 
 pub fn init_deploy_config() -> Result<(), Error> {
-    intro("Leptos Cloud deployment init")?;
+    intro("Oxyde Cloud deployment init")?;
 
     let deploy_config = select("How do you want to deploy?")
         .item(DeployConfig::GitHub, "GitHub Workflow", "")
@@ -64,9 +64,9 @@ pub fn init_deploy_config() -> Result<(), Error> {
             let config_str = TEMPLATES.render("github-workflow.yml", &context)?;
 
             create_dir_all(".github/workflows")?;
-            std::fs::write(".github/workflows/leptos-cloud-deploy.yml", config_str)?;
+            std::fs::write(".github/workflows/oxyde-cloud-deploy.yml", config_str)?;
 
-            outro("Created .github/workflows/leptos-cloud-deploy.yml")?;
+            outro("Created .github/workflows/oxyde-cloud-deploy.yml")?;
         }
         DeployConfig::None => {
             outro("You can setup deployment yourself manually or call `leco deploy-config` at any time")?;

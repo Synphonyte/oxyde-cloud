@@ -2,7 +2,7 @@ use keyring::{Entry, Result};
 
 #[inline(always)]
 pub fn api_key_entry() -> Result<Entry> {
-    Entry::new("leptos-cloud", "api-key")
+    Entry::new("oxyde-cloud", "api-key")
 }
 
 pub fn api_key() -> Result<String> {

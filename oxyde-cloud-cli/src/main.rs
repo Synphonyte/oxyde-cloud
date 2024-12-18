@@ -2,7 +2,7 @@ mod api_key;
 mod commands;
 
 use clap::{Parser, Subcommand};
-use leptos_cloud_common::config::CloudConfig;
+use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -31,8 +31,8 @@ enum Commands {
         #[arg(short, long)]
         team_slug: Option<String>,
 
-        /// Sets a custom config file. Defaults to `leptos-cloud.toml`
-        #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
+        /// Sets a custom config file. Defaults to `oxyde-cloud.toml`
+        #[arg(short, long, value_name = "FILE", default_value = "oxyde-cloud.toml")]
         config: PathBuf,
     },
 
@@ -45,8 +45,8 @@ enum Commands {
         #[arg(short, long)]
         name: Option<String>,
 
-        /// Sets a custom config file. Defaults to `leptos-cloud.toml`
-        #[arg(short, long, value_name = "FILE", default_value = "leptos-cloud.toml")]
+        /// Sets a custom config file. Defaults to `oxyde-cloud.toml`
+        #[arg(short, long, value_name = "FILE", default_value = "oxyde-cloud.toml")]
         config: PathBuf,
     },
 }
@@ -62,7 +62,7 @@ enum Error {
     #[error("DeployConfig error: {0}")]
     DeployConfig(#[from] commands::deploy_config::Error),
     #[error("Config loading error: {0}")]
-    Config(#[from] leptos_cloud_common::config::Error),
+    Config(#[from] oxyde_cloud_common::config::Error),
     #[error("Log error: {0}")]
     Name(String),
     #[error("Log error: {0}")]

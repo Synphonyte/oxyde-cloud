@@ -5,5 +5,5 @@ slug = "{{ app_slug }}"
 # Add environment variables here that are needed while running the app in the cloud
 
 # For example for sqlx you probably need sth like the following. Please note that you can access the
-# Leptos Cloud Secret Store with the syntax `${SECRET_NAME}`.
+# Oxyde Cloud Secret Store with the syntax `${SECRET_NAME}`.
 # DATABASE_URL = "postgresql://<user>:${DATABASE_PASSWORD}@<host>:<port>/<database>"

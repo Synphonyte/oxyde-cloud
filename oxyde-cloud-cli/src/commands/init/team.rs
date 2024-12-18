@@ -2,8 +2,8 @@ use crate::api_key::api_key;
 use crate::commands::init::Error;
 use cliclack::{input, select, spinner};
 use heck::ToTitleCase;
-use leptos_cloud_client::Client;
-use leptos_cloud_common::config::AppConfig;
+use oxyde_cloud_client::Client;
+use oxyde_cloud_common::config::AppConfig;
 
 pub(super) async fn input_team_slug() -> Result<String, Error> {
     let api_key = api_key()?;

@@ -12,8 +12,8 @@ lazy_static! {
         let mut tera = Tera::default();
 
         if let Err(e) = tera.add_raw_template(
-            "leptos-cloud.toml",
-            include_str!("../../templates/leptos-cloud.toml"),
+            "oxyde-cloud.toml",
+            include_str!("../../templates/oxyde-cloud.toml"),
         ) {
             println!("Parsing error(s): {}", e);
             ::std::process::exit(1);

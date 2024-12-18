@@ -8,7 +8,7 @@ pub enum Error {
 }
 
 pub fn logout() -> Result<(), Error> {
-    let keyring_entry = Entry::new("leptos-cloud", "api-key")?;
+    let keyring_entry = Entry::new("oxyde-cloud", "api-key")?;
 
     if let Err(err) = keyring_entry.delete_credential() {
         if let keyring::Error::NoEntry = err {
