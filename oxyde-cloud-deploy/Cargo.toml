@@ -2,6 +2,13 @@
 name = "oxyde-cloud-deploy"
 version = "0.1.0"
 edition = "2021"
+authors = ["Marc-Stefan Cassola"]
+categories = ["gui", "web-programming", "wasm"]
+description = "CLI for deploying the Oxyde Cloud API"
+keywords = ["oxyde", "leptos", "utilities", "cloud", "deploy"]
+license = "MIT"
+repository = "https://github.com/Synphonyte/oxyde-cloud"
+homepage = "https://oxyde.cloud"
 
 [lib]
 
