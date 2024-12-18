@@ -5,7 +5,6 @@ edition = "2021"
 authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
 description = "Shared code for the oxyde-cloud crates"
-exclude = ["examples/", "tests/"]
 keywords = ["oxyde", "leptos", "utilities", "cloud", "deploy"]
 license = "MIT"
 repository = "https://github.com/Synphonyte/oxyde-cloud"
