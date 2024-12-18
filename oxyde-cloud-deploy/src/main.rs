@@ -1,9 +1,7 @@
-use crate::deploy::deploy_with_config_file;
+use crate::deploy::{deploy_with_config_file, Error};
 use cargo_leptos::config::Opts;
 use clap::Parser;
-use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
-use thiserror::Error;
 
 mod build;
 mod deploy;
