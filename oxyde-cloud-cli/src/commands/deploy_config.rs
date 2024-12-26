@@ -47,11 +47,7 @@ pub fn init_deploy_config() -> Result<(), Error> {
 
     let deploy_config = select("How do you want to deploy?")
         .item(DeployConfig::GitHub, "GitHub Workflow", "")
-        .item(
-            DeployConfig::None,
-            "None",
-            "Setup deployment later",
-        )
+        .item(DeployConfig::None, "None", "Setup deployment later")
         .initial_value(DeployConfig::GitHub)
         .interact()?;
 

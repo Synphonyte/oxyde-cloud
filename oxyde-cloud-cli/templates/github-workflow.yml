@@ -34,6 +34,6 @@ jobs:
       - name: Deploy to Oxyde Cloud
         uses: Synphonyte/oxyde-cloud-deploy-action@v1
         with:
-          {% raw %}api-token: ${{ secrets.LEPTOS_CLOUD_TOKEN }}{% endraw %}
+          {% raw %}api-token: ${{ secrets.OXYDE_CLOUD_TOKEN }}{% endraw %}
           cloud-config-file: oxyde-cloud.toml
 
