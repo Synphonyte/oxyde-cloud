@@ -26,7 +26,7 @@ pub async fn login() -> Result<(), Error> {
         return Ok(());
     }
 
-    remark("Get your API-Key from https://leptos.cloud/profile/api-key")?;
+    remark("Get your API-Key from https://oxyde.cloud/dashboard/profile/api-key")?;
 
     let api_key: String = input("Paste your API key")
         .placeholder("ABCD-efgh-IJKL-mnop")

@@ -17,7 +17,7 @@ use oxyde_cloud_common::net::{
 };
 
 const BASE_URL: Option<&str> = option_env!("OXYDE_CLOUD_API_URL");
-const DEFAULT_BASE_URL: &str = "https://leptos.cloud/api/v1/";
+const DEFAULT_BASE_URL: &str = "https://oxyde.cloud/api/v1/";
 
 #[derive(Clone)]
 pub struct Client {

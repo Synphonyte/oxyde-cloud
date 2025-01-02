@@ -64,6 +64,6 @@ impl CloudConfig {
     }
 
     pub fn deployed_url(&self) -> String {
-        format!("https://{}.oxydecloud.app", self.app.slug)
+        format!("https://{}.oxydecloud.com", self.app.slug)
     }
 }
