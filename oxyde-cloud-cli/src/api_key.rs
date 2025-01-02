@@ -6,7 +6,7 @@ pub fn api_key_entry() -> Result<Entry> {
 }
 
 pub fn api_key() -> Result<String> {
-    if let Ok(api_key) = std::env::var("LEPTOS_CLOUD_API_KEY") {
+    if let Ok(api_key) = std::env::var("OXYDE_CLOUD_API_KEY") {
         Ok(api_key)
     } else {
         api_key_entry()?.get_password()

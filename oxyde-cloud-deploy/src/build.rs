@@ -10,8 +10,6 @@ pub async fn build(mut cargo_leptos_opts: Opts) -> anyhow::Result<()> {
     cargo_args.push(BUILD_TARGET.to_string());
     cargo_leptos_opts.bin_cargo_args = Some(cargo_args);
 
-    // std::env::set_var("LEPTOS_BIN_CARGO_COMMAND", "cross");
-
     run(Cli {
         manifest_path: None,
         log: vec![],

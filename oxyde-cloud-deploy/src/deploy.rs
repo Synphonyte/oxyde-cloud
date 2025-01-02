@@ -25,7 +25,7 @@ pub enum Error {
     #[error("Deployment done error: {0}")]
     Done(#[from] reqwest::Error),
 
-    #[error("Error reading variable `LEPTOS_CLOUD_API_KEY`: {0}")]
+    #[error("Error reading variable `OXYDE_CLOUD_API_KEY`: {0}")]
     ApiKeyEnv(#[from] VarError),
 
     #[error("Config loading error: {0}")]
@@ -52,7 +52,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     };
     let frontend_dir = "site";
 
-    let api_key = std::env::var("LEPTOS_CLOUD_API_KEY")?;
+    let api_key = std::env::var("OXYDE_CLOUD_API_KEY")?;
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);

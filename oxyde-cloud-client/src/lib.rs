@@ -16,7 +16,7 @@ use oxyde_cloud_common::net::{
     NewTeamRequest, SetTeamNameRequest, SuccessResponse, Team,
 };
 
-const BASE_URL: Option<&str> = option_env!("LEPTOS_CLOUD_API_URL");
+const BASE_URL: Option<&str> = option_env!("OXYDE_CLOUD_API_URL");
 const DEFAULT_BASE_URL: &str = "https://leptos.cloud/api/v1/";
 
 #[derive(Clone)]
@@ -144,7 +144,7 @@ impl Client {
     }
 
     fn build_route(route: &str) -> String {
-        let base_url = std::env::var("LEPTOS_CLOUD_API_URL")
+        let base_url = std::env::var("OXYDE_CLOUD_API_URL")
             .unwrap_or(BASE_URL.unwrap_or(DEFAULT_BASE_URL).to_string());
         format!("{base_url}{route}")
     }

@@ -6,5 +6,5 @@ slug = "{{ app_slug }}"
 
 # For example for sqlx you probably need sth like the following. Please note that you can access the
 {% raw %}# Oxyde Cloud Secret Store with the syntax `${{ secrets.SECRET_NAME }}`.
-# DATABASE_URL = "postgresql://${{ secrets.DATABASE_ACCESS }}@<host>:<port>/<database>"
+# DATABASE_URL = "postgresql://${{ secrets.DATABASE_CREDENTIALS }}@<host>:<port>/<database>"
 {% endraw %}
