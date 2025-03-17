@@ -14,12 +14,12 @@ homepage = "https://oxyde.cloud"
 
 [dependencies]
 anyhow = "1.0.93"
-cargo-leptos = "0.2.21"
-clap = { version = "4.5.19", features = ["derive"] }
+cargo-leptos = "0.2.30"
+clap = { version = "4.5.32", features = ["derive"] }
 oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true
-log = "0.4.22"
-reqwest = "0.12.9"
-thiserror = "2.0.3"
-tokio = "1.40.0"
+log = "0.4.26"
+reqwest = "0.12.14"
+thiserror = "2.0.12"
+tokio = "1.44.1"
 walkdir = "2.5.0"
