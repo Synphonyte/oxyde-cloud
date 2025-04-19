@@ -42,7 +42,7 @@ pub async fn deploy_with_config_file(
 }
 
 pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {
-    crate::build::build(cargo_leptos_opts.clone()).await?;
+    crate::build::build(cargo_leptos_opts.clone()).await.map_err(Error::Build)?;
 
     let target_dir = "target";
     let server_bin_dir = if cargo_leptos_opts.release {
