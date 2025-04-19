@@ -58,7 +58,7 @@ impl CloudConfig {
         let contents = std::fs::read_to_string(path)?;
         let mut config: Self = toml::from_str(&contents)?;
 
-        config.leptos_config = leptos_config::get_configuration(Some("Cargo.toml")).await?;
+        config.leptos_config = leptos_config::get_configuration(Some("Cargo.toml"))?;
 
         Ok(config)
     }
