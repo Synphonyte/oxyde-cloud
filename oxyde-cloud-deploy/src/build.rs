@@ -12,6 +12,8 @@ pub async fn build(mut cargo_leptos_opts: Opts) -> anyhow::Result<()> {
     cargo_args.push("-vv".to_string());
     cargo_leptos_opts.bin_cargo_args = Some(cargo_args);
 
+    println!("args: {:#?}", cargo_leptos_opts.bin_cargo_args.unwrap());
+
     run(Cli {
         manifest_path: None,
         log: vec![],
