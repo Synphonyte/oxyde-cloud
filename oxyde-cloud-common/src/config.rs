@@ -10,8 +10,8 @@ pub struct CloudConfig {
 
     pub env: Table,
 
-    #[serde(skip, default)]
-    pub leptos_config: leptos_config::ConfFile,
+    #[serde(skip)]
+    pub leptos_config: Option<leptos_config::ConfFile>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -58,7 +58,7 @@ impl CloudConfig {
         let contents = std::fs::read_to_string(path)?;
         let mut config: Self = toml::from_str(&contents)?;
 
-        config.leptos_config = leptos_config::get_configuration(Some("Cargo.toml"))?;
+        config.leptos_config = Some(leptos_config::get_configuration(Some("Cargo.toml"))?);
 
         Ok(config)
     }

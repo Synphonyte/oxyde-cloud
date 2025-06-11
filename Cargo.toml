@@ -13,6 +13,6 @@ exclude = ["examples"]
 default-members = ["oxyde-cloud-cli"]
 
 [workspace.dependencies]
-oxyde-cloud-common = { path = "./oxyde-cloud-common", version = "0.2.0" }
-oxyde-cloud-client = { path = "./oxyde-cloud-client", version = "0.2.0" }
+oxyde-cloud-common = { path = "./oxyde-cloud-common", version = "0.3.0" }
+oxyde-cloud-client = { path = "./oxyde-cloud-client", version = "0.3.0" }
 serde = { version = "1", features = ["derive"] }

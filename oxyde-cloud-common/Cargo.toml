@@ -1,6 +1,6 @@
 [package]
 name = "oxyde-cloud-common"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
@@ -13,7 +13,7 @@ homepage = "https://oxyde.cloud"
 
 [dependencies]
 headers-core = "0.3"
-leptos_config = "0.7"
+leptos_config = "0.8"
 serde.workspace = true
 thiserror = "2"
 toml = "0.8"
