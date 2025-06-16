@@ -9,7 +9,6 @@ pub async fn build(mut cargo_leptos_opts: Opts) -> anyhow::Result<()> {
     cargo_args.push("--target".to_string());
     cargo_args.push(BUILD_TARGET.to_string());
     cargo_args.push("--release".to_string());
-    cargo_args.push("-vv".to_string());
     cargo_leptos_opts.bin_cargo_args = Some(cargo_args);
 
     println!("args: {:#?}", cargo_leptos_opts.bin_cargo_args.clone().unwrap());
