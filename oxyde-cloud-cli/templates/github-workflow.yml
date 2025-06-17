@@ -15,6 +15,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      { % if sqlx == "postgres" % }
+        - uses: ikalnytskyi/action-setup-postgres@v7
+          with:
+            username: {% raw %}${{ secrets.DATABASE_USER }}{% endraw %}
+            password: {% raw %}${{ secrets.DATABASE_PASSWORD }}{% endraw %}
+            database: {% raw %}${{ secrets.DATABASE_NAME }}{% endraw %}
+            port: {% raw %}${{ secrets.DATABASE_PORT }}{% endraw %}
+          id: postgres
+        - run: {% raw %}psql  ${{ steps.postgres.outputs.connection-uri }} -c "SELECT 1"{% endraw %}
+        - run: {% raw %}psql service=${{ steps.postgres.outputs.service-name }} -c "SELECT 1"{% endraw %}
+        - run: psql -c "SELECT 1"
+          env:
+            PGSERVICE: {% raw %}${{ steps.postgres.outputs.service-name }}{% endraw %}
+      { % else % }
+
+      {% endif %}
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: {{ toolchain }}

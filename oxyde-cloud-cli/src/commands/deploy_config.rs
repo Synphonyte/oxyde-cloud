@@ -33,6 +33,12 @@ enum RustToolchain {
     Nightly,
 }
 
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+enum Sqlx {
+    Postgres,
+    None,
+}
+
 impl std::fmt::Display for RustToolchain {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -54,9 +60,11 @@ pub fn init_deploy_config() -> Result<(), Error> {
     match deploy_config {
         DeployConfig::GitHub => {
             let toolchain = select_rust_toolchain()?;
+            let sqlx = select_sqlx()?;
 
             let mut context = Context::new();
             context.insert("toolchain", &toolchain.to_string());
+            context.insert("sqlx", &sqlx.to_string());
             let config_str = TEMPLATES.render("github-workflow.yml", &context)?;
 
             create_dir_all(".github/workflows")?;
@@ -82,4 +90,13 @@ fn select_rust_toolchain() -> Result<RustToolchain, Error> {
         .interact()?;
 
     Ok(toolchain)
+}
+fn select_sqlx() -> Result<Sqlx, Error> {
+    let sqlx = select("Select your sqlx database server:")
+        .item(Sqlx::None, "none", "")
+        .item(Sqlx::Postgres, "postgres", "")
+        .initial_value(Sqlx::None)
+        .interact()?;
+
+    Ok(sqlx)
 }
