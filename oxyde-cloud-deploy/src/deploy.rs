@@ -42,10 +42,6 @@ pub async fn deploy_with_config_file(
 }
 
 pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {
-    if let Some((_, database_url)) = config.env.get_key_value("DATABASE_URL") {
-        unsafe { std::env::set_var("DATABASE_URL", database_url.as_str().expect("DATABASE_URL should be a string")) ; }
-    };
-    
     crate::build::build(cargo_leptos_opts.clone()).await.map_err(Error::Build)?;
 
     let target_dir = "target";
