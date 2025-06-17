@@ -48,6 +48,15 @@ impl std::fmt::Display for RustToolchain {
     }
 }
 
+impl std::fmt::Display for Sqlx {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Sqlx::None => write!(f, "none"),
+            Sqlx::Postgres => write!(f, "postgres"),
+        }
+    }
+}
+
 pub fn init_deploy_config() -> Result<(), Error> {
     intro("Oxyde Cloud deployment init")?;
 
