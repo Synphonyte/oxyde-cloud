@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      { % if sqlx == "postgres" % }
+      {% if sqlx == "postgres" %}
         - uses: ikalnytskyi/action-setup-postgres@v7
           with:
             username: {% raw %}${{ secrets.DATABASE_USER }}{% endraw %}
@@ -29,7 +29,7 @@ jobs:
         - run: psql -c "SELECT 1"
           env:
             PGSERVICE: {% raw %}${{ steps.postgres.outputs.service-name }}{% endraw %}
-      { % else % }
+      {% else %}
 
       {% endif %}
 

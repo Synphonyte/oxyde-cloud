@@ -8,10 +8,11 @@ pub async fn build(mut cargo_leptos_opts: Opts) -> anyhow::Result<()> {
     let mut cargo_args = cargo_leptos_opts.bin_cargo_args.unwrap_or_default();
     cargo_args.push("--target".to_string());
     cargo_args.push(BUILD_TARGET.to_string());
-    cargo_args.push("--release".to_string());
     cargo_leptos_opts.bin_cargo_args = Some(cargo_args);
 
-    println!("args: {:#?}", cargo_leptos_opts.bin_cargo_args.clone().unwrap());
+    println!("bin args: {:#?}", cargo_leptos_opts.bin_cargo_args.clone().unwrap());
+    
+    cargo_leptos_opts.release = true;
 
     run(Cli {
         manifest_path: None,
