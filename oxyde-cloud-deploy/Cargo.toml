@@ -1,6 +1,6 @@
 [package]
 name = "oxyde-cloud-deploy"
-version = "0.3.5"
+version = "0.3.6"
 edition = "2024"
 authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
@@ -14,7 +14,7 @@ homepage = "https://oxyde.cloud"
 
 [dependencies]
 anyhow = "1"
-cargo-leptos = "0.2.35"
+cargo-leptos = "0.2.36"
 clap = { version = "4.5", features = ["derive"] }
 oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true

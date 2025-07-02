@@ -14,9 +14,7 @@ pub async fn build(mut cargo_leptos_opts: Opts) -> anyhow::Result<()> {
         "bin args: {:#?}",
         cargo_leptos_opts.bin_cargo_args.clone().unwrap()
     );
-
-    cargo_leptos_opts.release = true;
-
+    
     run(Cli {
         manifest_path: None,
         log: vec![],
