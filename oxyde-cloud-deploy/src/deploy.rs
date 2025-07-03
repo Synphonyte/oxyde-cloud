@@ -45,6 +45,8 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     crate::build::build(cargo_leptos_opts.clone()).await.map_err(Error::Build)?;
 
     let target_dir = "target";
+    let target_bin_dir = "target/x86_64-unknown-linux-gnu";
+    
     let server_bin_dir = if cargo_leptos_opts.release {
         "release"
     } else {
@@ -56,7 +58,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);
-    let server_path = Path::new(target_dir).join(server_bin_dir);
+    let server_path = Path::new(target_bin_dir).join(server_bin_dir);
 
     let mut files = recursive_files_from_dir(frontend_path);
     files.append(&mut server_files(server_path)?);
