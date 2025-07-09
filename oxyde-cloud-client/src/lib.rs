@@ -7,6 +7,7 @@ use reqwest::multipart::{Form, Part};
 use reqwest::Body;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use tokio::io::{AsyncReadExt, BufReader};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub use errors::*;
@@ -18,6 +19,7 @@ use oxyde_cloud_common::net::{
 
 const BASE_URL: Option<&str> = option_env!("OXYDE_CLOUD_API_URL");
 const DEFAULT_BASE_URL: &str = "https://oxyde.cloud/api/v1/";
+const UPLOAD_CHUNK_SIZE: usize = 99 * 1024 * 1024;
 
 #[derive(Clone)]
 pub struct Client {
@@ -91,24 +93,43 @@ impl Client {
         path: impl AsRef<Path>,
     ) -> Result<(), UploadFileError> {
         let file = tokio::fs::File::open(path.as_ref()).await?;
-        let read_stream = FramedRead::new(file, BytesCodec::new());
+        let metadata = file.metadata().await?;
+        let total_size = metadata.len() as usize;
+        let total_chunks = (total_size + UPLOAD_CHUNK_SIZE - 1) / UPLOAD_CHUNK_SIZE;
 
-        let stream_part = Part::stream(Body::wrap_stream(read_stream))
-            .file_name(path.as_ref().to_string_lossy().to_string());
-        let form = Form::new().part("file", stream_part);
+        let mut reader = BufReader::new(file);
+        let mut buffer = vec![0u8; UPLOAD_CHUNK_SIZE];
+        let mut chunk_number = 0;
 
-        let _: SuccessResponse = self
-            .post("apps/upload-file")
-            .multipart(form)
-            .header(
-                AppMeta::name(),
-                AppMeta {
-                    app_slug: app_slug.as_ref().to_string(),
-                }
-                .to_string_value(),
-            )
-            .send()
-            .await?;
+        loop {
+            let n = reader.read(&mut buffer).await?;
+            if n == 0 {
+                break;
+            }
+
+            let part = reqwest::multipart::Part::bytes(buffer[..n].to_vec())
+                .file_name(path.as_ref().to_string_lossy().to_string());
+
+            let form = reqwest::multipart::Form::new()
+                .part("file", part)
+                .text("chunk_number", chunk_number.to_string())
+                .text("total_chunks", total_chunks.to_string());
+
+            let _: SuccessResponse = self
+                .clone()
+                .post("apps/upload-file")
+                .header(
+                    AppMeta::name(),
+                    AppMeta {
+                        app_slug: app_slug.as_ref().to_string(),
+                    }
+                    .to_string_value(),
+                )
+                .send()
+                .await?;
+
+            chunk_number += 1;
+        }
 
         Ok(())
     }
