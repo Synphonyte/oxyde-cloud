@@ -7,7 +7,7 @@ use reqwest::multipart::{Form, Part};
 use reqwest::Body;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokio::io::{AsyncReadExt, BufReader};
+use tokio::io::{AsyncReadExt, BufReader, AsyncSeekExt, SeekFrom};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub use errors::*;
@@ -19,7 +19,7 @@ use oxyde_cloud_common::net::{
 
 const BASE_URL: Option<&str> = option_env!("OXYDE_CLOUD_API_URL");
 const DEFAULT_BASE_URL: &str = "https://oxyde.cloud/api/v1/";
-const UPLOAD_CHUNK_SIZE: usize = 99 * 1024 * 1024;
+const UPLOAD_CHUNK_SIZE: usize = 90 * 1024 * 1024;
 
 #[derive(Clone)]
 pub struct Client {
@@ -118,6 +118,7 @@ impl Client {
             let _: SuccessResponse = self
                 .clone()
                 .post("apps/upload-file")
+                .multipart(form)
                 .header(
                     AppMeta::name(),
                     AppMeta {
