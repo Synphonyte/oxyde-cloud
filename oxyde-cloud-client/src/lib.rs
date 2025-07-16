@@ -92,20 +92,20 @@ impl Client {
         app_slug: impl AsRef<str>,
         path: impl AsRef<Path>,
     ) -> Result<(), UploadFileError> {
-        let file = tokio::fs::File::open(path.as_ref()).await?;
-        let metadata = file.metadata().await?;
+
+        let metadata = tokio::fs::metadata(path.as_ref()).await?;
         let total_size = metadata.len() as usize;
         let total_chunks = (total_size + UPLOAD_CHUNK_SIZE - 1) / UPLOAD_CHUNK_SIZE;
 
-        let mut reader = BufReader::new(file);
-        let mut buffer = vec![0u8; UPLOAD_CHUNK_SIZE];
-        let mut chunk_number = 0;
+        for chunk_number in 0..total_chunks {
+            let offset = chunk_number * UPLOAD_CHUNK_SIZE;
+            let len = std::cmp::min(UPLOAD_CHUNK_SIZE, total_size - offset);
 
-        loop {
-            let n = reader.read(&mut buffer).await?;
-            if n == 0 {
-                break;
-            }
+            let mut file = tokio::fs::File::open(path.as_ref()).await?;
+            file.seek(SeekFrom::Start(offset as u64)).await?;
+
+            let mut buffer = vec![0u8; len];
+            let n = file.read_exact(&mut buffer).await?;
 
             let part = reqwest::multipart::Part::bytes(buffer[..n].to_vec())
                 .file_name(path.as_ref().file_name().unwrap().to_string_lossy().to_string());
@@ -128,8 +128,6 @@ impl Client {
                 )
                 .send()
                 .await?;
-
-            chunk_number += 1;
         }
 
         Ok(())
