@@ -108,7 +108,7 @@ impl Client {
             let n = file.read_exact(&mut buffer).await?;
 
             let part = reqwest::multipart::Part::bytes(buffer[..n].to_vec())
-                .file_name(path.as_ref().file_name().unwrap().to_string_lossy().to_string());
+                .file_name(path.as_ref().to_string_lossy().to_string());
 
             let form = reqwest::multipart::Form::new()
                 .part("file", part)
