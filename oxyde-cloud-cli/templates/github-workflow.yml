@@ -52,7 +52,7 @@ jobs:
       - name: Custom run
         run: |
           echo "here you can run some code you need like"
-#          echo "${{ secrets.BUILD_ENV }}" > .env
+#          {% raw %}echo "${{ secrets.BUILD_ENV }}" > .env{% endraw %}
 
       - name: Deploy to Oxyde Cloud
         uses: Synphonyte/oxyde-cloud-deploy-action@v1
