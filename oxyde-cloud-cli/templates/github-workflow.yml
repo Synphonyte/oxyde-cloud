@@ -9,30 +9,19 @@ name: Cloud Deploy Workflow
 
 permissions: write-all
 
+env:
+  RUST_BACKTRACE: "full"
+  LEPTOS_BIN_TARGET_TRIPLE: "x86_64-unknown-linux-musl"
+  
 jobs:
   deploy:
     name: Deploy To Oxyde Cloud
     runs-on: ubuntu-latest
+    container: ghcr.io/blackdex/rust-musl:x86_64-musl-stable
+    
     steps:
       - uses: actions/checkout@v4
-
-      {% if sqlx == "postgres" %}
-        - uses: ikalnytskyi/action-setup-postgres@v7
-          with:
-            username: {% raw %}${{ secrets.DATABASE_USER }}{% endraw %}
-            password: {% raw %}${{ secrets.DATABASE_PASSWORD }}{% endraw %}
-            database: {% raw %}${{ secrets.DATABASE_NAME }}{% endraw %}
-            port: {% raw %}${{ secrets.DATABASE_PORT }}{% endraw %}
-          id: postgres
-        - run: {% raw %}psql  ${{ steps.postgres.outputs.connection-uri }} -c "SELECT 1"{% endraw %}
-        - run: {% raw %}psql service=${{ steps.postgres.outputs.service-name }} -c "SELECT 1"{% endraw %}
-        - run: psql -c "SELECT 1"
-          env:
-            PGSERVICE: {% raw %}${{ steps.postgres.outputs.service-name }}{% endraw %}
-      {% else %}
-
-      {% endif %}
-
+      
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: {{ toolchain }}
@@ -40,7 +29,16 @@ jobs:
           profile: minimal
           override: true
           components: rustfmt, clippy, rust-src
-
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          
+      - name: Install necessary libraries
+        run: |
+            apt-get update && apt-get install -y gh
+            npm install && npx browserslist@latest --update-db
+          
       - name: Cache
         uses: Swatinem/rust-cache@v2
 
@@ -50,6 +48,11 @@ jobs:
 #         run: cargo clippy --features docs,math --tests -- -D warnings
 #       - name: Run tests
 #         run: cargo test
+ 
+      - name: Custom run
+        run: |
+          echo "here you can run some code you need like"
+#          echo "${{ secrets.BUILD_ENV }}" > .env
 
       - name: Deploy to Oxyde Cloud
         uses: Synphonyte/oxyde-cloud-deploy-action@v1

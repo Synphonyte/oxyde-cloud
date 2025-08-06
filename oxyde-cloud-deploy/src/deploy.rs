@@ -2,7 +2,6 @@ use cargo_leptos::config::Opts;
 use oxyde_cloud_client::{Client, ReqwestJsonError, UploadFileError};
 use oxyde_cloud_common::config::CloudConfig;
 use std::env::VarError;
-use std::ffi::OsStr;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
