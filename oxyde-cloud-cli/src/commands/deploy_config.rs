@@ -69,11 +69,11 @@ pub fn init_deploy_config() -> Result<(), Error> {
     match deploy_config {
         DeployConfig::GitHub => {
             let toolchain = select_rust_toolchain()?;
-            let sqlx = select_sqlx()?;
+            // let sqlx = select_sqlx()?;
 
             let mut context = Context::new();
             context.insert("toolchain", &toolchain.to_string());
-            context.insert("sqlx", &sqlx.to_string());
+            // context.insert("sqlx", &sqlx.to_string());
             let config_str = TEMPLATES.render("github-workflow.yml", &context)?;
 
             create_dir_all(".github/workflows")?;
