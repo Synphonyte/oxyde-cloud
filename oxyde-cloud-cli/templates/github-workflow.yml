@@ -1,8 +1,10 @@
 on:
   push:
+    branches:
+      - main
     # Pattern matched against refs/tags
     tags:
-      - '*'           # Push events to every tag not containing /
+      - "*"         # Push events to every tag not containing /
   workflow_dispatch:
 
 name: Cloud Deploy Workflow
