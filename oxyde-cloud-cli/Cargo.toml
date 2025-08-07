@@ -18,7 +18,11 @@ path = "src/main.rs"
 clap = { version = "4.5", features = ["derive", "env"] }
 cliclack = "0.3"
 heck = "0.5"
-keyring = { version = "3", features = ["apple-native", "windows-native", "sync-secret-service"] }
+keyring = { version = "3", features = [
+    "apple-native",
+    "windows-native",
+    "sync-secret-service",
+] }
 lazy_static = "1.5"
 oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true

@@ -6,7 +6,7 @@ pub enum Error {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
 
-    #[error("Keyring error: {0}")]
+    #[error("Make sure you login first. Run `oxy login`.\nKeyring error: {0}")]
     Keyring(#[from] keyring::Error),
 
     #[error("Check Name error: {0}")]

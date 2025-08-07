@@ -70,7 +70,13 @@ enum Error {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() {
+    if let Err(err) = error_wrapper().await {
+        eprintln!("Error: {err}");
+    }
+}
+
+async fn error_wrapper() -> Result<(), Error> {
     let args = Args::parse();
 
     simple_logger::init_with_level(log::Level::Info).unwrap();
