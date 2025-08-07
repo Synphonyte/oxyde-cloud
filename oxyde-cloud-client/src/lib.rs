@@ -7,6 +7,7 @@ use reqwest::multipart::{Form, Part};
 use reqwest::Body;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
+use tokio::io::{AsyncReadExt, BufReader, AsyncSeekExt, SeekFrom};
 use tokio_util::codec::{BytesCodec, FramedRead};
 
 pub use errors::*;
@@ -18,6 +19,7 @@ use oxyde_cloud_common::net::{
 
 const BASE_URL: Option<&str> = option_env!("OXYDE_CLOUD_API_URL");
 const DEFAULT_BASE_URL: &str = "https://oxyde.cloud/api/v1/";
+const UPLOAD_CHUNK_SIZE: usize = 90 * 1024 * 1024;
 
 #[derive(Clone)]
 pub struct Client {
@@ -90,25 +92,43 @@ impl Client {
         app_slug: impl AsRef<str>,
         path: impl AsRef<Path>,
     ) -> Result<(), UploadFileError> {
-        let file = tokio::fs::File::open(path.as_ref()).await?;
-        let read_stream = FramedRead::new(file, BytesCodec::new());
 
-        let stream_part = Part::stream(Body::wrap_stream(read_stream))
-            .file_name(path.as_ref().to_string_lossy().to_string());
-        let form = Form::new().part("file", stream_part);
+        let metadata = tokio::fs::metadata(path.as_ref()).await?;
+        let total_size = metadata.len() as usize;
+        let total_chunks = (total_size + UPLOAD_CHUNK_SIZE - 1) / UPLOAD_CHUNK_SIZE;
 
-        let _: SuccessResponse = self
-            .post("apps/upload-file")
-            .multipart(form)
-            .header(
-                AppMeta::name(),
-                AppMeta {
-                    app_slug: app_slug.as_ref().to_string(),
-                }
-                .to_string_value(),
-            )
-            .send()
-            .await?;
+        for chunk_number in 0..total_chunks {
+            let offset = chunk_number * UPLOAD_CHUNK_SIZE;
+            let len = std::cmp::min(UPLOAD_CHUNK_SIZE, total_size - offset);
+
+            let mut file = tokio::fs::File::open(path.as_ref()).await?;
+            file.seek(SeekFrom::Start(offset as u64)).await?;
+
+            let mut buffer = vec![0u8; len];
+            let n = file.read_exact(&mut buffer).await?;
+
+            let part = reqwest::multipart::Part::bytes(buffer[..n].to_vec())
+                .file_name(path.as_ref().to_string_lossy().to_string());
+
+            let form = reqwest::multipart::Form::new()
+                .part("file", part)
+                .text("chunk_number", chunk_number.to_string())
+                .text("total_chunks", total_chunks.to_string());
+
+            let _: SuccessResponse = self
+                .clone()
+                .post("apps/upload-file")
+                .multipart(form)
+                .header(
+                    AppMeta::name(),
+                    AppMeta {
+                        app_slug: app_slug.as_ref().to_string(),
+                    }
+                    .to_string_value(),
+                )
+                .send()
+                .await?;
+        }
 
         Ok(())
     }

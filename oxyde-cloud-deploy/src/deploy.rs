@@ -2,7 +2,6 @@ use cargo_leptos::config::Opts;
 use oxyde_cloud_client::{Client, ReqwestJsonError, UploadFileError};
 use oxyde_cloud_common::config::CloudConfig;
 use std::env::VarError;
-use std::ffi::OsStr;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -45,6 +44,8 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     crate::build::build(cargo_leptos_opts.clone()).await.map_err(Error::Build)?;
 
     let target_dir = "target";
+    let target_bin_dir = "target/x86_64-unknown-linux-musl";
+
     let server_bin_dir = if cargo_leptos_opts.release {
         "release"
     } else {
@@ -56,7 +57,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);
-    let server_path = Path::new(target_dir).join(server_bin_dir);
+    let server_path = Path::new(target_bin_dir).join(server_bin_dir);
 
     let mut files = recursive_files_from_dir(frontend_path);
     files.append(&mut server_files(server_path)?);
@@ -100,11 +101,15 @@ fn recursive_files_from_dir(dir: impl AsRef<Path>) -> Vec<PathBuf> {
 }
 
 fn server_files(dir: impl AsRef<Path>) -> std::io::Result<Vec<PathBuf>> {
+    let starts_with_a_dot = |path: &Path| {
+        path.file_name().expect("cant read filename").to_str().expect("cant convert filename").starts_with(".")
+    }; 
+    
     Ok(read_dir(dir)?
         .filter_map(|d| {
             d.ok().and_then(|e| {
                 let path = e.path();
-                if path.is_file() && path.extension() != Some(OsStr::new("d")) {
+                if path.is_file() && path.extension() == None && !starts_with_a_dot(&path) {
                     Some(path)
                 } else {
                     None
