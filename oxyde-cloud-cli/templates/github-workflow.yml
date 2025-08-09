@@ -14,16 +14,16 @@ permissions: write-all
 env:
   RUST_BACKTRACE: "full"
   LEPTOS_BIN_TARGET_TRIPLE: "x86_64-unknown-linux-musl"
-  
+
 jobs:
   deploy:
     name: Deploy To Oxyde Cloud
     runs-on: ubuntu-latest
     container: ghcr.io/blackdex/rust-musl:x86_64-musl-stable
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: {{ toolchain }}
@@ -31,16 +31,18 @@ jobs:
           profile: minimal
           override: true
           components: rustfmt, clippy, rust-src
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          
+
       - name: Install necessary libraries
         run: |
             apt-get update && apt-get install -y gh
-            npm install && npx browserslist@latest --update-db
-          
+            if [ -f "package.json" ]; then
+              npm install && npx browserslist@latest --update-db
+            fi
+
       - name: Cache
         uses: Swatinem/rust-cache@v2
 
@@ -50,7 +52,7 @@ jobs:
 #         run: cargo clippy --features docs,math --tests -- -D warnings
 #       - name: Run tests
 #         run: cargo test
- 
+
       - name: Custom run
         run: |
           echo "here you can run some code you need like"
@@ -61,4 +63,3 @@ jobs:
         with:
           {% raw %}api-token: ${{ secrets.OXYDE_CLOUD_TOKEN }}{% endraw %}
           cloud-config-file: oxyde-cloud.toml
-
