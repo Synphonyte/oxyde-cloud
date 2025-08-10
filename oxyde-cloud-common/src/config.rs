@@ -1,7 +1,7 @@
-use leptos_config::errors::LeptosConfigError;
+use anyhow::{Context, Result};
+
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use thiserror::Error;
 use toml::Table;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -43,22 +43,20 @@ impl AppConfig {
     }
 }
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("TOML parse error: {0}")]
-    Toml(#[from] toml::de::Error),
-    #[error("Leptos config error: {0}")]
-    Leptos(#[from] LeptosConfigError),
-}
+// Error type replaced with anyhow::Result for better error handling
 
 impl CloudConfig {
-    pub async fn load(path: &PathBuf) -> Result<Self, Error> {
-        let contents = std::fs::read_to_string(path)?;
-        let mut config: Self = toml::from_str(&contents)?;
+    pub async fn load(path: &PathBuf) -> Result<Self> {
+        let contents = std::fs::read_to_string(path)
+            .with_context(|| format!("Failed to read config file: {}", path.display()))?;
 
-        config.leptos_config = Some(leptos_config::get_configuration(Some("Cargo.toml"))?);
+        let mut config: Self = toml::from_str(&contents)
+            .with_context(|| format!("Failed to parse TOML config file: {}", path.display()))?;
+
+        config.leptos_config = Some(
+            leptos_config::get_configuration(Some("Cargo.toml"))
+                .context("Failed to load Leptos configuration")?,
+        );
 
         Ok(config)
     }

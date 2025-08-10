@@ -1,47 +1,25 @@
+use anyhow::{Context, Result};
 use cargo_leptos::config::Opts;
-use oxyde_cloud_client::{Client, ReqwestJsonError, UploadFileError};
+use oxyde_cloud_client::Client;
 use oxyde_cloud_common::config::CloudConfig;
-use std::env::VarError;
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
-use thiserror::Error;
 use walkdir::WalkDir;
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Build error: {0}")]
-    Build(#[from] anyhow::Error),
-
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-
-    #[error("Check Name error: {0}")]
-    CheckName(#[from] ReqwestJsonError),
-
-    #[error("Upload error: {0}")]
-    Upload(#[from] UploadFileError),
-
-    #[error("Deployment done error: {0}")]
-    Done(#[from] reqwest::Error),
-
-    #[error("Error reading variable `OXYDE_CLOUD_API_KEY`: {0}")]
-    ApiKeyEnv(#[from] VarError),
-
-    #[error("Config loading error: {0}")]
-    Config(#[from] oxyde_cloud_common::config::Error),
-}
-
-pub async fn deploy_with_config_file(
-    config: &PathBuf,
-    cargo_leptos_opts: Opts,
-) -> Result<(), Error> {
-    let config = CloudConfig::load(config).await?;
-    deploy(&config, cargo_leptos_opts).await?;
+pub async fn deploy_with_config_file(config: &PathBuf, cargo_leptos_opts: Opts) -> Result<()> {
+    let config = CloudConfig::load(config)
+        .await
+        .with_context(|| format!("Failed to load config file: {}", config.display()))?;
+    deploy(&config, cargo_leptos_opts)
+        .await
+        .context("Failed to deploy with loaded config")?;
     Ok(())
 }
 
-pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(), Error> {
-    crate::build::build(cargo_leptos_opts.clone()).await.map_err(Error::Build)?;
+pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<()> {
+    crate::build::build(cargo_leptos_opts.clone())
+        .await
+        .context("Failed to build project")?;
 
     let target_dir = "target";
     let target_bin_dir = "target/x86_64-unknown-linux-musl";
@@ -53,14 +31,15 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<(),
     };
     let frontend_dir = "site";
 
-    let api_key = std::env::var("OXYDE_CLOUD_API_KEY")?;
+    let api_key = std::env::var("OXYDE_CLOUD_API_KEY")
+        .context("Environment variable OXYDE_CLOUD_API_KEY is required for deployment")?;
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);
     let server_path = Path::new(target_bin_dir).join(server_bin_dir);
 
     let mut files = recursive_files_from_dir(frontend_path);
-    files.append(&mut server_files(server_path)?);
+    files.append(&mut server_files(server_path).context("Failed to collect server files")?);
 
     log::debug!(target:"cargo_leptos", "Found files: {:#?}", files);
 
@@ -80,14 +59,22 @@ async fn deploy_inner(
     config: &CloudConfig,
     client: Client,
     files: &mut Vec<PathBuf>,
-) -> Result<(), Error> {
+) -> Result<()> {
     for file in files {
-        log::debug!(target:"cargo_leptos", "Uploading {}...", file.display());
-        client.clone().upload_file(&config.app.slug, file).await?;
+        let file_path = file.display().to_string();
+        log::debug!(target:"cargo_leptos", "Uploading {}...", file_path);
+        client
+            .clone()
+            .upload_file(&config.app.slug, file)
+            .await
+            .with_context(|| format!("Failed to upload file: {file_path}"))?;
     }
 
     log::debug!(target:"cargo_leptos", "Deploying app...");
-    client.upload_done(config).await?;
+    client
+        .upload_done(config)
+        .await
+        .context("Failed to signal deployment completion")?;
 
     Ok(())
 }
@@ -102,7 +89,11 @@ fn recursive_files_from_dir(dir: impl AsRef<Path>) -> Vec<PathBuf> {
 
 fn server_files(dir: impl AsRef<Path>) -> std::io::Result<Vec<PathBuf>> {
     let starts_with_a_dot = |path: &Path| {
-        path.file_name().expect("cant read filename").to_str().expect("cant convert filename").starts_with(".")
+        path.file_name()
+            .expect("cant read filename")
+            .to_str()
+            .expect("cant convert filename")
+            .starts_with(".")
     };
 
     Ok(read_dir(dir)?

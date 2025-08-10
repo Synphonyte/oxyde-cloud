@@ -1,6 +1,6 @@
 [package]
 name = "oxyde-cloud-deploy"
-version = "0.3.12"
+version = "0.4.0"
 edition = "2024"
 authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
@@ -20,6 +20,6 @@ oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true
 log = "0.4"
 reqwest = "0.12"
-thiserror = "2"
+
 tokio = "1"
 walkdir = "2.5"
