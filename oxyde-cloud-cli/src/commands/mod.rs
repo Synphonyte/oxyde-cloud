@@ -15,7 +15,7 @@ lazy_static! {
             "oxyde-cloud.toml",
             include_str!("../../templates/oxyde-cloud.toml"),
         ) {
-            println!("Parsing error(s): {}", e);
+            println!("Parsing error(s): {e}");
             ::std::process::exit(1);
         }
 
@@ -23,7 +23,7 @@ lazy_static! {
             "github-workflow.yml",
             include_str!("../../templates/github-workflow.yml"),
         ) {
-            println!("Parsing error(s): {}", e);
+            println!("Parsing error(s): {e}");
             ::std::process::exit(1);
         }
 

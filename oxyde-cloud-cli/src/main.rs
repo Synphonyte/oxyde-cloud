@@ -4,7 +4,7 @@ mod commands;
 use clap::{Parser, Subcommand};
 use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
-use thiserror::Error;
+use anyhow::{Context, Result};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -51,52 +51,36 @@ enum Commands {
     },
 }
 
-#[derive(Debug, Error)]
-enum Error {
-    #[error("Login error: {0}")]
-    Login(#[from] commands::login::Error),
-    #[error("Logout error: {0}")]
-    Logout(#[from] commands::logout::Error),
-    #[error("Init error: {0}")]
-    Init(#[from] commands::init::Error),
-    #[error("DeployConfig error: {0}")]
-    DeployConfig(#[from] commands::deploy_config::Error),
-    #[error("Config loading error: {0}")]
-    Config(#[from] oxyde_cloud_common::config::Error),
-    #[error("Log error: {0}")]
-    Name(String),
-    #[error("Log error: {0}")]
-    Log(#[from] commands::log::Error),
-}
+
 
 #[tokio::main]
 async fn main() {
     if let Err(err) = error_wrapper().await {
-        eprintln!("Error: {err}");
+        eprintln!("Error: {err:?}");
     }
 }
 
-async fn error_wrapper() -> Result<(), Error> {
+async fn error_wrapper() -> Result<()> {
     let args = Args::parse();
 
     simple_logger::init_with_level(log::Level::Info).unwrap();
 
     match args.command {
         Commands::Login => {
-            commands::login::login().await?;
+            commands::login::login().await.context("Login failed")?;
         }
         Commands::Logout => {
-            commands::logout::logout()?;
+            commands::logout::logout().context("Logout failed")?;
         }
         Commands::Init {
             name,
             team_slug,
             config,
         } => {
-            commands::init::init(name, team_slug, config).await?;
+            commands::init::init(name, team_slug, config).await.context("Init failed")?;
         }
         Commands::DeployConfig => {
-            commands::deploy_config::init_deploy_config()?;
+            commands::deploy_config::init_deploy_config().context("Deploy config failed")?;
         }
         Commands::Log { name, config } => {
             let config = CloudConfig::load(&config).await.ok();
@@ -106,10 +90,10 @@ async fn error_wrapper() -> Result<(), Error> {
             } else if let Some(config) = config {
                 config.app.slug
             } else {
-                return Err(Error::Name("If you don't execute this command in a folder with a config you have to provide an app name!".to_string()));
+                anyhow::bail!("If you don't execute this command in a folder with a config you have to provide an app name!");
             };
 
-            commands::log::log(&name).await?;
+            commands::log::log(&name).await.context("Log command failed")?;
         }
     }
 

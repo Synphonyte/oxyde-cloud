@@ -1,11 +1,11 @@
 use crate::api_key::api_key;
-use crate::commands::init::Error;
+use anyhow::{Context, Result};
 use cliclack::{input, spinner};
 use oxyde_cloud_client::Client;
 use oxyde_cloud_common::config::AppConfig;
 
-pub(super) async fn input_app_slug(team_slug: &str) -> Result<String, Error> {
-    let api_key = api_key()?;
+pub(super) async fn input_app_slug(team_slug: &str) -> Result<String> {
+    let api_key = api_key().context("Failed to get API key")?;
 
     loop {
         let app_slug: String = input("Enter app slug [a-z0-9_-]:")
@@ -17,14 +17,16 @@ pub(super) async fn input_app_slug(team_slug: &str) -> Result<String, Error> {
                     Err(format!("App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_SLUG_LENGTH))
                 }
             })
-            .interact()?;
+            .interact()
+            .context("Failed to get app slug input")?;
 
         let spinner = spinner();
         spinner.start(format!(r#"Checking availability for slug "{app_slug}"..."#));
 
         let client = Client::new(api_key.clone());
 
-        if client.new_app(&app_slug, team_slug).await? {
+        if client.new_app(&app_slug, team_slug).await
+            .with_context(|| format!("Failed to check app slug availability: {app_slug}"))? {
             spinner.stop("Slug confirmed");
             return Ok(app_slug);
         } else {

@@ -1,19 +1,19 @@
 use crate::api_key::api_key;
-use crate::commands::init::Error;
+use anyhow::{Context, Result};
 use cliclack::{input, select, spinner};
 use heck::ToTitleCase;
 use oxyde_cloud_client::Client;
 use oxyde_cloud_common::config::AppConfig;
 
-pub(super) async fn input_team_slug() -> Result<String, Error> {
-    let api_key = api_key()?;
+pub(super) async fn input_team_slug() -> Result<String> {
+    let api_key = api_key().context("Failed to get API key")?;
 
     let spinner = spinner();
     spinner.start("Loading teams...");
 
     let client = Client::new(api_key.clone());
 
-    let teams = client.teams().await?;
+    let teams = client.teams().await.context("Failed to fetch teams from API")?;
 
     if teams.is_empty() {
         spinner.stop("No teams found.");
@@ -34,12 +34,13 @@ pub(super) async fn input_team_slug() -> Result<String, Error> {
                 .map(|t| (t.slug, t.name, ""))
                 .collect::<Vec<_>>(),
         )
-        .interact()?;
+        .interact()
+        .context("Failed to get team selection")?;
 
     Ok(team_slug)
 }
 
-async fn input_new_team(api_key: String) -> Result<String, Error> {
+async fn input_new_team(api_key: String) -> Result<String> {
     loop {
         let team_slug: String = input("Creating new team. Enter unique team slug [a-z0-9_-]:")
             .placeholder("your-team-name-42")
@@ -50,7 +51,8 @@ async fn input_new_team(api_key: String) -> Result<String, Error> {
                     Err(format!("Team slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_SLUG_LENGTH))
                 }
             })
-            .interact()?;
+            .interact()
+            .context("Failed to get team slug input")?;
 
         let spinner = spinner();
         spinner.start(format!(
@@ -59,10 +61,12 @@ async fn input_new_team(api_key: String) -> Result<String, Error> {
 
         let client = Client::new(api_key.clone());
 
-        if client.new_team(&team_slug).await? {
+        if client.new_team(&team_slug).await
+            .with_context(|| format!("Failed to check team slug availability: {team_slug}"))? {
             spinner.stop("Slug confirmed");
 
-            input_new_team_name(&team_slug, api_key).await?;
+            input_new_team_name(&team_slug, api_key).await
+                .context("Failed to set team name")?;
 
             return Ok(team_slug);
         } else {
@@ -73,12 +77,13 @@ async fn input_new_team(api_key: String) -> Result<String, Error> {
     }
 }
 
-async fn input_new_team_name(team_slug: &str, api_key: String) -> Result<(), Error> {
+async fn input_new_team_name(team_slug: &str, api_key: String) -> Result<()> {
     let default_name = team_slug.to_title_case();
 
     let mut name: String = input("Enter team display name:")
         .default_input(&default_name)
-        .interact()?;
+        .interact()
+        .context("Failed to get team name input")?;
 
     if name.is_empty() {
         name = default_name;
@@ -89,7 +94,8 @@ async fn input_new_team_name(team_slug: &str, api_key: String) -> Result<(), Err
 
     let client = Client::new(api_key);
 
-    client.set_team_name(team_slug, &name).await?;
+    client.set_team_name(team_slug, &name).await
+        .with_context(|| format!("Failed to save team name: {name}"))?;
 
     spinner.stop("Saved.");
 

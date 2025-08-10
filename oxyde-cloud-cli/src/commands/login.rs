@@ -1,40 +1,32 @@
 use crate::api_key::api_key_entry;
-use crate::commands::logout;
 use crate::commands::logout::logout;
 use cliclack::log::remark;
 use cliclack::{input, intro, outro, outro_cancel, spinner};
 use oxyde_cloud_client::Client;
-use thiserror::Error;
+use anyhow::{Context, Result};
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("Keyring error: {0}")]
-    Keyring(#[from] keyring::Error),
-    #[error("Logout error: {0}")]
-    Logout(#[from] logout::Error),
-}
+pub async fn login() -> Result<()> {
+    intro("Login").context("Failed to show login intro")?;
 
-pub async fn login() -> Result<(), Error> {
-    intro("Login")?;
-
-    let keyring_entry = api_key_entry()?;
+    let keyring_entry = api_key_entry().context("Failed to access keyring")?;
 
     if keyring_entry.get_password().is_ok() {
-        outro("You're already logged in.")?;
+        outro("You're already logged in.").context("Failed to show outro message")?;
         return Ok(());
     }
 
-    remark("Get your API-Key from https://oxyde.cloud/dashboard/profile/api-key")?;
+    remark("Get your API-Key from https://oxyde.cloud/dashboard/profile/api-key")
+        .context("Failed to show API key instructions")?;
 
     let api_key: String = input("Paste your API key")
         .placeholder("ABCD-efgh-IJKL-mnop")
-        .interact()?;
+        .interact()
+        .context("Failed to get API key input")?;
 
     let api_key = api_key.trim().to_string();
 
-    keyring_entry.set_password(&api_key)?;
+    keyring_entry.set_password(&api_key)
+        .context("Failed to store API key in keyring")?;
 
     let spinner = spinner();
     spinner.start("Logging in...");
@@ -45,13 +37,14 @@ pub async fn login() -> Result<(), Error> {
             outro(format!(
                 "You're now logged in as {}.",
                 login_result.username
-            ))?;
+            )).context("Failed to show login success message")?;
         }
         Err(err) => {
-            logout()?;
+            logout().context("Failed to logout after login error")?;
 
             spinner.error("Failed!");
-            outro_cancel(format!("Failed to login: {err}"))?;
+            outro_cancel(format!("Failed to login: {err}"))
+                .context("Failed to show login error message")?;
         }
     }
 

@@ -1,6 +1,6 @@
 [package]
 name = "oxyde-cloud-cli"
-version = "0.3.8"
+version = "0.4.0"
 edition = "2024"
 authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
@@ -29,6 +29,6 @@ oxyde-cloud-common.workspace = true
 log = "0.4"
 simple_logger = "5"
 tera = { version = "1.20", default-features = false }
-thiserror = "2"
+anyhow = "1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 toml = "0.8"
