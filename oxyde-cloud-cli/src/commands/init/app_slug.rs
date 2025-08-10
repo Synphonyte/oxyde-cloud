@@ -25,8 +25,11 @@ pub(super) async fn input_app_slug(team_slug: &str) -> Result<String> {
 
         let client = Client::new(api_key.clone());
 
-        if client.new_app(&app_slug, team_slug).await
-            .with_context(|| format!("Failed to check app slug availability: {app_slug}"))? {
+        if client
+            .new_app(&app_slug, team_slug)
+            .await
+            .with_context(|| format!("Failed to check app slug availability: {app_slug}"))?
+        {
             spinner.stop("Slug confirmed");
             return Ok(app_slug);
         } else {

@@ -7,10 +7,10 @@ use tera::Context;
 mod app_slug;
 mod team;
 
+use crate::commands::TEMPLATES;
 use crate::commands::deploy_config::init_deploy_config;
 use crate::commands::init::app_slug::input_app_slug;
 use crate::commands::init::team::input_team_slug;
-use crate::commands::TEMPLATES;
 
 pub async fn init(
     app_slug: Option<String>,
@@ -34,7 +34,9 @@ pub async fn init(
                 .context("Failed to show app slug remark")?;
             slug
         }
-        None => input_app_slug(&team_slug).await.context("Failed to get app slug")?,
+        None => input_app_slug(&team_slug)
+            .await
+            .context("Failed to get app slug")?,
     };
 
     let mut context = Context::new();

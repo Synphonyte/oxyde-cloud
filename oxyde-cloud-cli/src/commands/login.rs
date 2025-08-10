@@ -1,9 +1,9 @@
 use crate::api_key::api_key_entry;
 use crate::commands::logout::logout;
+use anyhow::{Context, Result};
 use cliclack::log::remark;
 use cliclack::{input, intro, outro, outro_cancel, spinner};
 use oxyde_cloud_client::Client;
-use anyhow::{Context, Result};
 
 pub async fn login() -> Result<()> {
     intro("Login").context("Failed to show login intro")?;
@@ -25,7 +25,8 @@ pub async fn login() -> Result<()> {
 
     let api_key = api_key.trim().to_string();
 
-    keyring_entry.set_password(&api_key)
+    keyring_entry
+        .set_password(&api_key)
         .context("Failed to store API key in keyring")?;
 
     let spinner = spinner();
@@ -37,7 +38,8 @@ pub async fn login() -> Result<()> {
             outro(format!(
                 "You're now logged in as {}.",
                 login_result.username
-            )).context("Failed to show login success message")?;
+            ))
+            .context("Failed to show login success message")?;
         }
         Err(err) => {
             logout().context("Failed to logout after login error")?;

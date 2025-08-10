@@ -1,10 +1,10 @@
 mod api_key;
 mod commands;
 
+use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
-use anyhow::{Context, Result};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -51,8 +51,6 @@ enum Commands {
     },
 }
 
-
-
 #[tokio::main]
 async fn main() {
     if let Err(err) = error_wrapper().await {
@@ -77,7 +75,9 @@ async fn error_wrapper() -> Result<()> {
             team_slug,
             config,
         } => {
-            commands::init::init(name, team_slug, config).await.context("Init failed")?;
+            commands::init::init(name, team_slug, config)
+                .await
+                .context("Init failed")?;
         }
         Commands::DeployConfig => {
             commands::deploy_config::init_deploy_config().context("Deploy config failed")?;
@@ -90,10 +90,14 @@ async fn error_wrapper() -> Result<()> {
             } else if let Some(config) = config {
                 config.app.slug
             } else {
-                anyhow::bail!("If you don't execute this command in a folder with a config you have to provide an app name!");
+                anyhow::bail!(
+                    "If you don't execute this command in a folder with a config you have to provide an app name!"
+                );
             };
 
-            commands::log::log(&name).await.context("Log command failed")?;
+            commands::log::log(&name)
+                .await
+                .context("Log command failed")?;
         }
     }
 

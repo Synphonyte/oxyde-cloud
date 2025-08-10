@@ -3,12 +3,10 @@ mod errors;
 use headers_core::Header;
 use log::error;
 use reqwest::header::{HeaderName, HeaderValue};
-use reqwest::multipart::{Form, Part};
-use reqwest::Body;
+use reqwest::multipart::Form;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use tokio::io::{AsyncReadExt, BufReader, AsyncSeekExt, SeekFrom};
-use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio::io::{AsyncReadExt, AsyncSeekExt, SeekFrom};
 
 pub use errors::*;
 use oxyde_cloud_common::config::CloudConfig;
@@ -95,7 +93,7 @@ impl Client {
 
         let metadata = tokio::fs::metadata(path.as_ref()).await?;
         let total_size = metadata.len() as usize;
-        let total_chunks = (total_size + UPLOAD_CHUNK_SIZE - 1) / UPLOAD_CHUNK_SIZE;
+        let total_chunks = total_size.div_ceil(UPLOAD_CHUNK_SIZE);
 
         for chunk_number in 0..total_chunks {
             let offset = chunk_number * UPLOAD_CHUNK_SIZE;
@@ -176,7 +174,7 @@ impl ClientBuilder {
     pub fn auth_header(self, api_key: &str) -> Self {
         Self(
             self.0
-                .header("Authorization", format!("Bearer {}", api_key)),
+                .header("Authorization", format!("Bearer {api_key}")),
         )
     }
 

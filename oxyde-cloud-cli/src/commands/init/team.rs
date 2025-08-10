@@ -13,7 +13,10 @@ pub(super) async fn input_team_slug() -> Result<String> {
 
     let client = Client::new(api_key.clone());
 
-    let teams = client.teams().await.context("Failed to fetch teams from API")?;
+    let teams = client
+        .teams()
+        .await
+        .context("Failed to fetch teams from API")?;
 
     if teams.is_empty() {
         spinner.stop("No teams found.");
@@ -61,11 +64,15 @@ async fn input_new_team(api_key: String) -> Result<String> {
 
         let client = Client::new(api_key.clone());
 
-        if client.new_team(&team_slug).await
-            .with_context(|| format!("Failed to check team slug availability: {team_slug}"))? {
+        if client
+            .new_team(&team_slug)
+            .await
+            .with_context(|| format!("Failed to check team slug availability: {team_slug}"))?
+        {
             spinner.stop("Slug confirmed");
 
-            input_new_team_name(&team_slug, api_key).await
+            input_new_team_name(&team_slug, api_key)
+                .await
                 .context("Failed to set team name")?;
 
             return Ok(team_slug);
@@ -94,7 +101,9 @@ async fn input_new_team_name(team_slug: &str, api_key: String) -> Result<()> {
 
     let client = Client::new(api_key);
 
-    client.set_team_name(team_slug, &name).await
+    client
+        .set_team_name(team_slug, &name)
+        .await
         .with_context(|| format!("Failed to save team name: {name}"))?;
 
     spinner.stop("Saved.");
