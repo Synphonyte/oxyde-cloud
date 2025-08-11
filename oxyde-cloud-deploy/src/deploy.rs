@@ -22,7 +22,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<()>
         .context("Failed to build project")?;
 
     let target_dir = "target";
-    let target_bin_dir = "target/x86_64-unknown-linux-musl";
+    let target_bin_dir = std::env::var("OXYDE_CLOUD_BIN_DIR").unwrap_or_else(|_| "target/x86_64-unknown-linux-musl".to_string());
 
     let server_bin_dir = if cargo_leptos_opts.release {
         "release"
@@ -36,7 +36,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<()>
     let client = Client::new(api_key.clone());
 
     let frontend_path = Path::new(target_dir).join(frontend_dir);
-    let server_path = Path::new(target_bin_dir).join(server_bin_dir);
+    let server_path = Path::new(&target_bin_dir).join(server_bin_dir);
 
     let mut files = recursive_files_from_dir(frontend_path);
     files.append(&mut server_files(server_path).context("Failed to collect server files")?);
