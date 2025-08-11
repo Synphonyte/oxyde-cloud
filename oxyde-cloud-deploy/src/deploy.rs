@@ -22,7 +22,7 @@ pub async fn deploy(config: &CloudConfig, cargo_leptos_opts: Opts) -> Result<()>
         .context("Failed to build project")?;
 
     let target_dir = "target";
-    let target_bin_dir = "target/x86_64-unknown-linux-musl";
+    let target_bin_dir = "target"; // /x86_64-unknown-linux-musl";
 
     let server_bin_dir = if cargo_leptos_opts.release {
         "release"

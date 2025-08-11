@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 use tera::Tera;
 
+pub mod deploy;
 pub mod deploy_config;
 pub mod init;
 pub mod log;

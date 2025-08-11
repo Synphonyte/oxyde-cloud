@@ -36,6 +36,14 @@ enum Commands {
         config: PathBuf,
     },
 
+    #[cfg(feature = "with-deploy-test")]
+    /// Deploy the project to the cloud
+    Deploy {
+        /// Sets a custom config file. Defaults to `oxyde-cloud.toml`
+        #[arg(short, long, value_name = "FILE", default_value = "oxyde-cloud.toml")]
+        config: PathBuf,
+    },
+
     /// Configure how the project should be deployed to the cloud
     DeployConfig,
 
@@ -52,13 +60,7 @@ enum Commands {
 }
 
 #[tokio::main]
-async fn main() {
-    if let Err(err) = error_wrapper().await {
-        eprintln!("Error: {err:?}");
-    }
-}
-
-async fn error_wrapper() -> Result<()> {
+async fn main() -> Result<()> {
     let args = Args::parse();
 
     simple_logger::init_with_level(log::Level::Info).unwrap();
@@ -78,6 +80,12 @@ async fn error_wrapper() -> Result<()> {
             commands::init::init(name, team_slug, config)
                 .await
                 .context("Init failed")?;
+        }
+        #[cfg(feature = "with-deploy-test")]
+        Commands::Deploy { config } => {
+            commands::deploy::deploy(config)
+                .await
+                .context("Deploy failed")?;
         }
         Commands::DeployConfig => {
             commands::deploy_config::init_deploy_config().context("Deploy config failed")?;

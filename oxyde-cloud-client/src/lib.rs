@@ -192,6 +192,7 @@ impl Client {
 
     pub fn get(self, route: &str) -> ClientBuilder {
         let url = Self::build_route(route);
+        println!("GET request URL: {}", url);
 
         ClientBuilder(self.client.get(url)).auth_header(&self.api_key)
     }

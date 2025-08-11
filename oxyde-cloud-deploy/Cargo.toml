@@ -14,7 +14,7 @@ homepage = "https://oxyde.cloud"
 
 [dependencies]
 anyhow = "1"
-cargo-leptos = "0.2.36"
+cargo-leptos.workspace = true
 clap = { version = "4.5", features = ["derive"] }
 oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true
