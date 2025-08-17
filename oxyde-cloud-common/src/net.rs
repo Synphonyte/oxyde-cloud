@@ -16,6 +16,7 @@ pub struct Team {
 pub struct NewAppRequest {
     pub team_slug: String,
     pub app_slug: String,
+    pub name: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

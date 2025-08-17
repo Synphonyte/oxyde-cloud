@@ -14,7 +14,7 @@ pub(super) async fn input_app_slug(team_slug: &str) -> Result<String> {
                 if AppConfig::is_valid_slug(input) {
                     Ok(())
                 } else {
-                    Err(format!("App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.", AppConfig::MIN_SLUG_LENGTH))
+                    Err(AppConfig::slug_requirements())
                 }
             })
             .interact()
