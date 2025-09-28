@@ -4,6 +4,7 @@ use cliclack::{intro, log::remark, outro};
 use oxyde_cloud_common::config::CloudConfig;
 use std::path::PathBuf;
 
+#[cfg(feature = "with-deploy-test")]
 pub async fn deploy(config: PathBuf) -> Result<()> {
     intro("Deploy to Oxyde Cloud").context("Failed to show deploy intro")?;
 
