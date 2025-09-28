@@ -41,12 +41,13 @@ impl Client {
         Ok(teams)
     }
 
-    pub async fn new_app(self, app_slug: &str, team_slug: &str) -> Result<bool> {
+    pub async fn new_app(self, app_slug: &str, team_slug: &str, name: &str) -> Result<bool> {
         let CheckAvailabilityResponse { available } = self
             .post("apps/new")
             .json(&NewAppRequest {
                 app_slug: app_slug.to_string(),
                 team_slug: team_slug.to_string(),
+                name: name.to_string()
             })
             .context("Failed to serialize new app request")?
             .send()
