@@ -2,7 +2,6 @@
 name = "oxyde-cloud-cli"
 version = "0.4.3"
 edition = "2024"
-authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
 description = "CLI for the Oxyde Cloud"
 keywords = ["oxyde", "leptos", "cloud", "deploy", "cli"]
@@ -16,24 +15,27 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1"
+axum = "0.7"
 cargo-leptos.workspace = true
 clap = { version = "4.5", features = ["derive", "env"] }
 cliclack = "0.3"
 heck = "0.5"
 keyring = { version = "3", features = [
-    "apple-native",
-    "windows-native",
-    "sync-secret-service",
+  "apple-native",
+  "windows-native",
+  "sync-secret-service",
 ] }
 lazy_static = "1.5"
 log = "0.4"
+opener = "0.7"
 oxyde-cloud-client.workspace = true
 oxyde-cloud-common.workspace = true
 oxyde-cloud-deploy = { workspace = true, optional = true }
 simple_logger = "5"
 tera = { version = "1.20", default-features = false }
-tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-toml = "0.8"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+toml.workspace = true
+urlencoding = "2.1"
 
 [features]
 default = []

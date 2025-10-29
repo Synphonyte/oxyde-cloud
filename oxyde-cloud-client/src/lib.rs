@@ -41,12 +41,13 @@ impl Client {
         Ok(teams)
     }
 
-    pub async fn new_app(self, app_slug: &str, team_slug: &str) -> Result<bool> {
+    pub async fn new_app(self, app_slug: &str, team_slug: &str, name: &str) -> Result<bool> {
         let CheckAvailabilityResponse { available } = self
             .post("apps/new")
             .json(&NewAppRequest {
                 app_slug: app_slug.to_string(),
                 team_slug: team_slug.to_string(),
+                name: name.to_string(),
             })
             .context("Failed to serialize new app request")?
             .send()
@@ -106,7 +107,7 @@ impl Client {
             )
         })?;
         let total_size = metadata.len() as usize;
-        let total_chunks = (total_size + UPLOAD_CHUNK_SIZE - 1) / UPLOAD_CHUNK_SIZE;
+        let total_chunks = total_size.div_ceil(UPLOAD_CHUNK_SIZE);
 
         for chunk_number in 0..total_chunks {
             let offset = chunk_number * UPLOAD_CHUNK_SIZE;

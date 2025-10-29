@@ -2,7 +2,6 @@
 name = "oxyde-cloud-client"
 version = "0.4.2"
 edition = "2024"
-authors = ["Marc-Stefan Cassola"]
 categories = ["gui", "web-programming", "wasm"]
 description = "Client SDK for the Oxyde Cloud API"
 keywords = ["oxyde", "leptos", "utilities", "cloud", "deploy"]
