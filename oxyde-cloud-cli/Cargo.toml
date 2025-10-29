@@ -1,6 +1,6 @@
 [package]
 name = "oxyde-cloud-cli"
-version = "0.4.3"
+version = "0.4.4"
 edition = "2024"
 categories = ["gui", "web-programming", "wasm"]
 description = "CLI for the Oxyde Cloud"
