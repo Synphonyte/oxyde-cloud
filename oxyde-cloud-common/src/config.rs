@@ -30,7 +30,7 @@ impl AppConfig {
 
     pub fn slug_requirements() -> String {
         format!(
-            "[a-z0-9-] App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.",
+            "[a-z0-9-] App slug must be at least {} characters long, lower case alphanumeric and can contain dashes.",
             Self::MIN_SLUG_LENGTH
         )
     }
