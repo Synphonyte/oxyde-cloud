@@ -20,17 +20,17 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    pub const ALLOWED_CHARS: [char; 38] = [
+    pub const ALLOWED_CHARS: [char; _] = [
         'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
         's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        '-', '_',
+        '-',
     ];
 
     pub const MIN_SLUG_LENGTH: usize = 5;
 
     pub fn slug_requirements() -> String {
         format!(
-            "[a-z0-9_-] App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.",
+            "[a-z0-9-] App slug must be at least {} characters long, lower case alphanumeric and can contain underscores or dashes.",
             Self::MIN_SLUG_LENGTH
         )
     }
